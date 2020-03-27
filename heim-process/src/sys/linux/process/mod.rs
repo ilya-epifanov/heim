@@ -68,7 +68,7 @@ impl Process {
     }
 
     pub async fn exe(&self) -> ProcessResult<PathBuf> {
-        match rt::fs::read_link(format!("/proc/{}/exe", self.pid)).await {
+        match std::fs::read_link(format!("/proc/{}/exe", self.pid)).await {
             Ok(path) => Ok(path),
             Err(..) => {
                 // log::trace!() ?
@@ -88,7 +88,7 @@ impl Process {
     }
 
     pub async fn cwd(&self) -> ProcessResult<PathBuf> {
-        match rt::fs::read_link(format!("/proc/{}/cwd", self.pid)).await {
+        match std::fs::read_link(format!("/proc/{}/cwd", self.pid)).await {
             Ok(path) => Ok(path),
             Err(..) => {
                 if pid_exists(self.pid).await? {

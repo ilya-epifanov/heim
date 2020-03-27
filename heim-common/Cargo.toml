@@ -5,7 +5,7 @@ authors = ["svartalf <self@svartalf.info>"]
 edition = "2018"
 description = "Common stuff shared across heim project crates"
 keywords = ["heim", "system", "information", "sysinfo", "psutil"]
-categories = ["asynchronous", "os", "api-bindings"]
+categories = ["os", "api-bindings"]
 repository = "https://github.com/heim-rs/heim"
 readme = "README.md"
 license = "Apache-2.0 OR MIT"
@@ -13,8 +13,6 @@ license = "Apache-2.0 OR MIT"
 [dependencies]
 libc = "~0.2"
 cfg-if = "~0.1"
-futures-core = "^0.3"
-futures-util = { version = "^0.3", default-features = false }
 pin-utils = "0.1.0-alpha.4"
 uom = { version = "0.27.0", default-features = false, features = ["autoconvert", "f32", "f64", "u64", "si", "std"] }
 
@@ -30,6 +28,5 @@ mach = "0.3.2"
 core-foundation = "0.7.0"
 
 [dev-dependencies]
-futures-executor = "^0.3"
 version-sync = "0.8"
 

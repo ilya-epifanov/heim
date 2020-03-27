@@ -5,9 +5,7 @@ edition = "2018"
 publish = false
 
 [dependencies]
-heim = { path = "../heim", features = ["full", "runtime-tokio"] }
-futures = "~0.3"
-tokio = { version = "~0.2", features = ["rt-threaded"] }
+heim = { path = "../heim", features = ["full"] }
 criterion = "~0.3"
 
 [[bench]]

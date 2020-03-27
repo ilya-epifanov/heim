@@ -5,7 +5,7 @@ use crate::sys::unix;
 use crate::{Pid, ProcessResult};
 
 pub fn pids() -> impl Stream<Item = ProcessResult<Pid>> {
-    rt::fs::read_dir("/proc")
+    std::fs::read_dir("/proc")
         .try_flatten_stream()
         .map_err(From::from)
         .try_filter_map(|entry| {

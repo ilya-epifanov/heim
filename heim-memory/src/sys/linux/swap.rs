@@ -1,9 +1,10 @@
+use std::fs;
 use std::io;
 use std::str::FromStr;
 
+use heim_common::fs::read_into;
 use heim_common::prelude::*;
 use heim_common::units::{information, Information};
-use heim_runtime as rt;
 
 static PROC_VMSTAT: &str = "/proc/vmstat";
 static PROC_MEMINFO: &str = "/proc/meminfo";
@@ -139,16 +140,9 @@ impl Swap {
     }
 }
 
-async fn vm_stat() -> Result<VmStat> {
-    rt::fs::read_into(PROC_VMSTAT).await
-}
-
-pub async fn swap() -> Result<Swap> {
-    let (meminfo, vm_stat) = future::try_join(
-        rt::fs::read_to_string(PROC_MEMINFO).map_err(Into::into),
-        vm_stat(),
-    )
-    .await?;
+pub fn swap() -> Result<Swap> {
+    let meminfo = fs::read_to_string(PROC_MEMINFO)?;
+    let vm_stat = read_into(PROC_VMSTAT)?;
 
     Swap::parse_str(&meminfo, vm_stat)
 }

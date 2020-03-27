@@ -19,7 +19,7 @@ fn file_name(prefix: &OsStr, postfix: &[u8]) -> OsString {
 }
 
 async fn read_temperature(path: PathBuf) -> Result<ThermodynamicTemperature> {
-    let contents = rt::fs::read_to_string(path).await?;
+    let contents = std::fs::read_to_string(path).await?;
     // Originally value is in millidegrees of Celsius
     let value = contents.trim_end().parse::<f32>()?;
 
@@ -41,14 +41,14 @@ async fn hwmon_sensor(input: PathBuf) -> Result<TemperatureSensor> {
         None => unreachable!(),
     };
 
-    let unit_name = rt::fs::read_to_string(root.join("name"))
+    let unit_name = std::fs::read_to_string(root.join("name"))
         .map_err(Error::from)
         .map_ok(|mut string| {
             // Dropping trailing `\n`
             let _ = string.pop();
             string
         });
-    let label = rt::fs::read_to_string(root.join(file_name(prefix, b"label")))
+    let label = std::fs::read_to_string(root.join(file_name(prefix, b"label")))
         .map_err(Error::from)
         .map_ok(|mut string| {
             // Dropping trailing `\n`
@@ -87,11 +87,11 @@ async fn hwmon_sensor(input: PathBuf) -> Result<TemperatureSensor> {
 fn hwmon() -> impl Stream<Item = Result<TemperatureSensor>> {
     // TODO: It would be nice to have async glob matchers :(
     // Basically we are searching for `/sys/class/hwmon/temp*_*` files here
-    rt::fs::read_dir("/sys/class/hwmon/")
+    std::fs::read_dir("/sys/class/hwmon/")
         .try_flatten_stream()
         .try_filter(|entry| future::ready(entry.file_name().as_bytes().starts_with(b"hwmon")))
         .and_then(|entry| {
-            let inner = rt::fs::read_dir(entry.path())
+            let inner = std::fs::read_dir(entry.path())
                 .try_flatten_stream()
                 .try_filter(|entry| {
                     let name = entry.file_name();
@@ -113,16 +113,16 @@ fn hwmon() -> impl Stream<Item = Result<TemperatureSensor>> {
 fn hwmon_device() -> impl Stream<Item = Result<TemperatureSensor>> {
     // TODO: It would be nice to have async glob matchers :(
     // Basically we are searching for `/sys/class/hwmon/temp*_*` files here
-    rt::fs::read_dir("/sys/class/hwmon/")
+    std::fs::read_dir("/sys/class/hwmon/")
         .try_flatten_stream()
         .try_filter(|entry| future::ready(entry.file_name().as_bytes().starts_with(b"hwmon")))
         .try_filter(|entry| {
             // TODO: `entry.path()` allocates memory for `PathBuf` twice
             // here and in the next combinator
-            rt::fs::path_exists(entry.path().join("device"))
+            std::fs::path_exists(entry.path().join("device"))
         })
         .and_then(|entry| {
-            let inner = rt::fs::read_dir(entry.path().join("device"))
+            let inner = std::fs::read_dir(entry.path().join("device"))
                 .try_flatten_stream()
                 .try_filter(|entry| {
                     let name = entry.file_name();
@@ -140,7 +140,7 @@ fn hwmon_device() -> impl Stream<Item = Result<TemperatureSensor>> {
 
 // https://www.kernel.org/doc/Documentation/thermal/sysfs-api.txt
 fn thermal_zone() -> impl Stream<Item = Result<TemperatureSensor>> {
-    rt::fs::read_dir("/sys/class/thermal/")
+    std::fs::read_dir("/sys/class/thermal/")
         .try_flatten_stream()
         .try_filter(|entry| {
             future::ready(entry.file_name().as_bytes().starts_with(b"thermal_zone"))
@@ -149,7 +149,7 @@ fn thermal_zone() -> impl Stream<Item = Result<TemperatureSensor>> {
         .and_then(|entry| {
             let root = entry.path();
             let temperature = read_temperature(root.join("temp"));
-            let unit_name = rt::fs::read_to_string(root.join("type"))
+            let unit_name = std::fs::read_to_string(root.join("type"))
                 .map_err(Error::from)
                 .map_ok(|mut string| {
                     // Dropping trailing `\n`
@@ -168,7 +168,7 @@ fn thermal_zone() -> impl Stream<Item = Result<TemperatureSensor>> {
                 critical: None,
             };
 
-            rt::fs::read_dir(root)
+            std::fs::read_dir(root)
                 .try_flatten_stream()
                 .try_filter(|entry| {
                     let name = entry.file_name();
@@ -188,7 +188,7 @@ fn thermal_zone() -> impl Stream<Item = Result<TemperatureSensor>> {
 
                     // TODO: Rewrite with `async_await` when it will be stable
                     // Because right now it looks just terrible
-                    rt::fs::read_to_string(type_path)
+                    std::fs::read_to_string(type_path)
                         .map_err(Error::from)
                         .and_then(move |content| match content.as_str() {
                             "critical\n" => read_temperature(temp_path)

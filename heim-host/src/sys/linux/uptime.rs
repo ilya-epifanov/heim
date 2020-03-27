@@ -7,7 +7,7 @@ use heim_runtime as rt;
 const PROC_UPTIME: &str = "/proc/uptime";
 
 pub async fn uptime() -> Result<Time> {
-    let contents = rt::fs::read_to_string(PROC_UPTIME).await?;
+    let contents = std::fs::read_to_string(PROC_UPTIME).await?;
 
     match contents.splitn(2, ' ').next() {
         Some(raw_value) => {

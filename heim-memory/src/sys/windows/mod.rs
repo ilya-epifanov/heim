@@ -62,7 +62,7 @@ impl fmt::Debug for Swap {
     }
 }
 
-async fn memory_status() -> Result<sysinfoapi::MEMORYSTATUSEX> {
+fn memory_status() -> Result<sysinfoapi::MEMORYSTATUSEX> {
     unsafe {
         let mut mem_status = mem::MaybeUninit::<sysinfoapi::MEMORYSTATUSEX>::uninit();
         let length = mem::size_of::<sysinfoapi::MEMORYSTATUSEX>() as minwindef::DWORD;
@@ -77,10 +77,10 @@ async fn memory_status() -> Result<sysinfoapi::MEMORYSTATUSEX> {
     }
 }
 
-pub async fn swap() -> Result<Swap> {
-    memory_status().await.map(Swap)
+pub fn swap() -> Result<Swap> {
+    memory_status().map(Swap)
 }
 
-pub async fn memory() -> Result<Memory> {
-    memory_status().await.map(Memory)
+pub fn memory() -> Result<Memory> {
+    memory_status().map(Memory)
 }

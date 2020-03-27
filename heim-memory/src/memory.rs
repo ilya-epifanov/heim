@@ -47,6 +47,6 @@ impl fmt::Debug for Memory {
 /// Returns physical [Memory] usage statistics.
 ///
 /// [Memory]: ./struct.Memory.html
-pub async fn memory() -> Result<Memory> {
-    sys::memory().await.map(Into::into)
+pub fn memory() -> Result<Memory> {
+    sys::memory().map(Into::into)
 }

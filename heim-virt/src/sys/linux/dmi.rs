@@ -20,7 +20,7 @@ pub async fn detect_vm_dmi() -> Result<Virtualization, ()> {
     ];
 
     for filename in &PROBE_FILES {
-        let line = match rt::fs::read_first_line(filename).await {
+        let line = match std::fs::read_first_line(filename).await {
             Ok(line) => line,
             Err(..) => continue,
         };

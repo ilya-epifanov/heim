@@ -35,7 +35,7 @@ impl FromStr for IoCounters {
 
 pub async fn io(pid: Pid) -> ProcessResult<IoCounters> {
     let path = format!("/proc/{}/io", pid);
-    match rt::fs::read_to_string(path).await {
+    match std::fs::read_to_string(path).await {
         Ok(contents) => IoCounters::from_str(&contents).map_err(Into::into),
         Err(e) if e.raw_os_error() == Some(libc::EACCES) => Err(ProcessError::AccessDenied(pid)),
         Err(e) => Err(e.into()),

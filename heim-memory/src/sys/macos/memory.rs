@@ -44,7 +44,7 @@ impl Memory {
     }
 }
 
-pub async fn memory() -> Result<Memory> {
+pub fn memory() -> Result<Memory> {
     let total = bindings::hw_memsize()?;
     let vm_stats = bindings::host_vm_info()?;
     let page_size = *PAGE_SIZE;

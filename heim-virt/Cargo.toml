@@ -5,14 +5,13 @@ authors = ["svartalf <self@svartalf.info>"]
 edition = "2018"
 description = "Cross-platform virtualization system detection"
 keywords = ["heim", "system", "information"]
-categories = ["asynchronous", "os", "api-bindings"]
+categories = ["os", "api-bindings"]
 repository = "https://github.com/heim-rs/heim"
 readme = "README.md"
 license = "Apache-2.0 OR MIT"
 
 [dependencies]
 heim-common = { version = "0.1.0-alpha.1", path = "../heim-common" }
-heim-runtime = { version = "0.1.0-alpha.1", path = "../heim-runtime" }
 cfg-if = "~0.1"
 
 [target.'cfg(all(target_os = "linux", any(target_arch="x86", target_arch="x86_64")))'.dependencies]
@@ -20,17 +19,8 @@ raw-cpuid = "7.0.3"
 
 [dev-dependencies]
 heim-derive = { version = "0.1.0-alpha.1", path = "../heim-derive" }
-futures-executor = "^0.3"
-tokio = { version = "^0.2", features = ["rt-threaded"] }
-async-std = "^1.5"
 version-sync = "0.8"
 tempfile = "3.0"
-
-[features]
-# Polyfill runtime is enabled by default only to execute examples, tests and benchmarks.
-# When used via `heim` facade crate, this feature is disabled.
-# See https://github.com/rust-lang/cargo/issues/5015 for details.
-default = ["heim-runtime/runtime-polyfill"]
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "docsrs"]

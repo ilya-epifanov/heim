@@ -45,6 +45,6 @@ impl fmt::Debug for Swap {
 /// Returns [Swap] memory statistics.
 ///
 /// [Swap]: ./struct.Swap.html
-pub async fn swap() -> Result<Swap> {
-    sys::swap().await.map(Into::into)
+pub fn swap() -> Result<Swap> {
+    sys::swap().map(Into::into)
 }

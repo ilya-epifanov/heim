@@ -24,7 +24,7 @@ async fn detect_wsl<T>(path: T) -> Result<Virtualization, ()>
 where
     T: AsRef<Path> + Send + Unpin + 'static,
 {
-    let line = rt::fs::read_first_line(path).await.map_err(|_| ())?;
+    let line = std::fs::read_first_line(path).await.map_err(|_| ())?;
 
     match line {
         ref probe if probe.contains("Microsoft") => Ok(Virtualization::Wsl),
@@ -40,7 +40,7 @@ where
     // systemd PID 1 might have dropped this information into a file in `/run`.
     // This is better than accessing `/proc/1/environ`,
     // since we don't need `CAP_SYS_PTRACE` for that.
-    let line = rt::fs::read_first_line(path).await.map_err(|_| ())?;
+    let line = std::fs::read_first_line(path).await.map_err(|_| ())?;
 
     try_guess_container(&line)
 }
@@ -49,7 +49,7 @@ async fn detect_cgroups<T>(path: T) -> Result<Virtualization, ()>
 where
     T: AsRef<Path> + Send + Unpin + 'static,
 {
-    let lines = rt::fs::read_lines(path).await.map_err(|_| ())?;
+    let lines = std::fs::read_lines(path).await.map_err(|_| ())?;
     rt::pin!(lines);
 
     while let Some(line) = lines.next().await {
@@ -66,8 +66,8 @@ where
 }
 
 async fn detect_openvz() -> Result<Virtualization, ()> {
-    let f1 = rt::fs::path_exists("/proc/vz");
-    let f2 = rt::fs::path_exists("/proc/bc");
+    let f1 = std::fs::path_exists("/proc/vz");
+    let f2 = std::fs::path_exists("/proc/bc");
 
     match rt::join!(f1, f2) {
         // `/proc/vz` exists in container and outside of the container,
@@ -81,7 +81,7 @@ async fn detect_init_env<T>(path: T) -> Result<Virtualization, ()>
 where
     T: AsRef<Path> + Send + Unpin + 'static,
 {
-    let contents = rt::fs::read_to_string(path).await.map_err(|_| ())?;
+    let contents = std::fs::read_to_string(path).await.map_err(|_| ())?;
 
     let matched = contents
         .split('\0')

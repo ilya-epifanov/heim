@@ -74,7 +74,7 @@ impl FromStr for Partition {
 
 // Returns stream with known physical (only!) partitions
 fn known_filesystems() -> impl Stream<Item = Result<FileSystem>> {
-    rt::fs::read_lines("/proc/filesystems")
+    std::fs::read_lines("/proc/filesystems")
         .try_flatten_stream()
         .map_err(Error::from)
         .try_filter_map(|line| {
@@ -95,7 +95,7 @@ fn known_filesystems() -> impl Stream<Item = Result<FileSystem>> {
 }
 
 pub fn partitions() -> impl Stream<Item = Result<Partition>> {
-    rt::fs::read_lines(PROC_MOUNTS)
+    std::fs::read_lines(PROC_MOUNTS)
         .try_flatten_stream()
         .map_err(Error::from)
         .try_filter_map(|line| {

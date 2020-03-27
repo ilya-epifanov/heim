@@ -24,7 +24,7 @@ async fn hypervisor<T>(path: T) -> Result<Virtualization, ()>
 where
     T: AsRef<Path> + Send + Unpin + 'static,
 {
-    let line = rt::fs::read_first_line(path).await.map_err(|_| ())?;
+    let line = std::fs::read_first_line(path).await.map_err(|_| ())?;
     match &line {
         l if l == "linux,kvm" => Ok(Virtualization::Kvm),
         l if l.contains("xen") => Ok(Virtualization::Xen),
@@ -37,7 +37,7 @@ async fn device_tree<T>(path: T) -> Result<Virtualization, ()>
 where
     T: AsRef<Path> + Send + Unpin + 'static,
 {
-    let mut entries = rt::fs::read_dir(path).await.map_err(|_| ())?;
+    let mut entries = std::fs::read_dir(path).await.map_err(|_| ())?;
     while let Some(entry) = entries.next().await {
         let entry = entry.map_err(|_| ())?;
 

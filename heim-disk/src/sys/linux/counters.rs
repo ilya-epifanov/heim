@@ -114,7 +114,7 @@ impl FromStr for IoCounters {
 }
 
 pub fn io_counters() -> impl Stream<Item = Result<IoCounters>> {
-    rt::fs::read_lines_into("/proc/diskstats")
+    std::fs::read_lines_into("/proc/diskstats")
         .map_err(Into::into)
         .try_flatten_stream()
         .into_stream()

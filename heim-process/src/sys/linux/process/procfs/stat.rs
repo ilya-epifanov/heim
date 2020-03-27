@@ -118,7 +118,7 @@ impl FromStr for Stat {
 
 pub async fn stat(pid: Pid) -> ProcessResult<Stat> {
     let path = format!("/proc/{}/stat", pid);
-    let contents = match rt::fs::read_to_string(&path).await {
+    let contents = match std::fs::read_to_string(&path).await {
         Ok(contents) => contents,
         Err(e) if e.kind() == io::ErrorKind::NotFound => {
             return Err(ProcessError::NoSuchProcess(pid))

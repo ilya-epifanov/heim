@@ -80,7 +80,7 @@ impl FromStr for Memory {
 }
 
 pub async fn stat_memory(pid: Pid) -> ProcessResult<Memory> {
-    rt::fs::read_into::<_, _, Error>(format!("/proc/{}/statm", pid))
+    std::fs::read_into::<_, _, Error>(format!("/proc/{}/statm", pid))
         .await
         .map_err(Into::into)
 }

@@ -5,7 +5,7 @@ authors = ["svartalf <self@svartalf.info>"]
 edition = "2018"
 description = "Cross-platform framework for system information"
 keywords = ["heim", "system", "information", "sysinfo", "psutil"]
-categories = ["asynchronous", "os", "api-bindings"]
+categories = ["os", "api-bindings"]
 repository = "https://github.com/heim-rs/heim"
 readme = "README.md"
 license = "Apache-2.0 OR MIT"
@@ -18,7 +18,6 @@ is-it-maintained-open-issues = { repository = "heim-rs/heim" }
 
 [dependencies]
 heim-common = { version = "0.1.0-alpha.1", path = "../heim-common" }
-heim-runtime = { version = "0.1.0-alpha.1", path = "../heim-runtime", default-features = false }
 heim-cpu = {version = "0.1.0-alpha.1", path = "../heim-cpu", optional = true, default-features = false }
 heim-disk = {version = "0.1.0-alpha.1", path = "../heim-disk", optional = true, default-features = false }
 heim-host = { version = "0.1.0-alpha.1", path = "../heim-host", optional = true, default-features = false }
@@ -45,11 +44,6 @@ net = ["heim-net"]
 process = ["heim-process"]
 virt = ["heim-virt"]
 sensors = ["heim-sensors"]
-
-# Runtimes
-runtime-polyfill = ["heim-runtime/runtime-polyfill"]
-runtime-tokio = ["heim-runtime/runtime-tokio"]
-runtime-async-std = ["heim-runtime/runtime-async-std"]
 
 [package.metadata.docs.rs]
 features = ["full", "runtime-polyfill"]

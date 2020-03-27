@@ -27,6 +27,8 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 mod errors;
+#[doc(hidden)]
+pub mod fs;
 mod macros;
 #[doc(hidden)]
 pub mod sys;
@@ -52,32 +54,4 @@ pub type Pid = winapi::shared::minwindef::DWORD;
 pub mod prelude {
     pub use super::errors::{Error, Result};
     pub use super::wrap;
-
-    /// This module tries to mimic `futures` crate structure
-    /// except without re-exporting unused subcrates like `executor` or `compat`.
-    pub mod futures {
-        pub use futures_util::ready;
-        pub use futures_util::task;
-
-        /// Asynchronous values.
-        pub mod future {
-            pub use futures_core::future::*;
-            pub use futures_util::future::*;
-        }
-
-        /// Asynchronous streams.
-        pub mod stream {
-            pub use futures_core::stream::*;
-            pub use futures_util::stream::*;
-        }
-    }
-
-    // And these re-exports are used across the `heim-*` crates,
-    // would be bad to break them
-    pub use self::futures::future::{
-        self, BoxFuture, FusedFuture, Future, FutureExt, TryFutureExt,
-    };
-    pub use self::futures::stream::{
-        self, BoxStream, FusedStream, Stream, StreamExt, TryStreamExt,
-    };
 }
