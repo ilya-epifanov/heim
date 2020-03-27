@@ -50,13 +50,13 @@ impl fmt::Debug for CpuTime {
 /// Returns cumulative value of all [CPU times].
 ///
 /// [CPU times]: struct.CpuTime.html
-pub async fn time() -> Result<CpuTime> {
-    sys::time().await.map(Into::into)
+pub fn time() -> Result<CpuTime> {
+    sys::time().map(Into::into)
 }
 
 /// Returns a stream over the [CPU time] for each CPU core.
 ///
 /// [CPU time]: struct.CpuTime.html
-pub fn times() -> impl Stream<Item = Result<CpuTime>> {
+pub fn times() -> impl Iterator<Item = Result<CpuTime>> {
     sys::times().map_ok(Into::into)
 }

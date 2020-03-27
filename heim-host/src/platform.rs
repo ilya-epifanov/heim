@@ -81,6 +81,6 @@ impl fmt::Debug for Platform {
 /// Returns [Platform] information.
 ///
 /// [Platform]: ./struct.Platform.html
-pub async fn platform() -> Result<Platform> {
-    sys::platform().await.map(Into::into)
+pub fn platform() -> Result<Platform> {
+    sys::platform().map(Into::into)
 }

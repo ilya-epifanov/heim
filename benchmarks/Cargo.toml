@@ -5,7 +5,7 @@ edition = "2018"
 publish = false
 
 [dependencies]
-heim = { path = "../heim", features = ["full"] }
+heim = { path = "../heim", features = ["host", "memory"] }
 criterion = "~0.3"
 
 [[bench]]

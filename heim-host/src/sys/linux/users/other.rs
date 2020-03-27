@@ -83,11 +83,8 @@ impl From<libc::utmpx> for User {
     }
 }
 
-pub fn users() -> impl Stream<Item = Result<User>> {
-    future::lazy(|_| {
-        let users = get_users::<User>();
+pub fn users() -> impl Iterator<Item = Result<User>> {
+    let users = get_users::<User>();
 
-        Ok(stream::iter(users).map(Ok))
-    })
-    .try_flatten_stream()
+    users.into_iter().map(Ok)
 }

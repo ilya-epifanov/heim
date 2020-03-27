@@ -1,7 +1,7 @@
 use heim_common::prelude::*;
 use heim_common::units::{time, Time};
 
-pub async fn uptime() -> Result<Time> {
+pub fn uptime() -> Result<Time> {
     let ms = unsafe {
         // https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-gettickcount64
         // seems not to be able to fail

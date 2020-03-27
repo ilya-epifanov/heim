@@ -53,5 +53,6 @@ pub type Pid = winapi::shared::minwindef::DWORD;
 /// and might change at any time.
 pub mod prelude {
     pub use super::errors::{Error, Result};
+    pub use super::fs as fs_ext;
     pub use super::wrap;
 }

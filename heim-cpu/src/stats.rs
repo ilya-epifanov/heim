@@ -35,6 +35,6 @@ impl fmt::Debug for CpuStats {
 /// Returns [CpuStats] information.
 ///
 /// [CpuStats]: ./struct.CpuStats.html
-pub async fn stats() -> Result<CpuStats> {
-    sys::stats().await.map(Into::into)
+pub fn stats() -> Result<CpuStats> {
+    sys::stats().map(Into::into)
 }

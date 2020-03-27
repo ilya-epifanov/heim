@@ -86,7 +86,7 @@ impl FromStr for CpuTime {
     }
 }
 
-pub async fn time() -> Result<CpuTime> {
+pub fn time() -> Result<CpuTime> {
     // cumulative time is always the first line
     let mut lines = rt::fs::read_lines_into::<_, CpuTime, _>("/proc/stat").await?;
     match lines.next().await {

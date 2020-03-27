@@ -1,5 +1,4 @@
 use heim_common::prelude::*;
-use heim_runtime as rt;
 
 fn sysconf() -> Result<u64> {
     let result = unsafe { libc::sysconf(libc::_SC_NPROCESSORS_ONLN) };
@@ -11,12 +10,10 @@ fn sysconf() -> Result<u64> {
     }
 }
 
-async fn cpuinfo() -> Result<u64> {
-    let mut lines = rt::fs::read_lines("/proc/cpuinfo").await?;
+fn cpuinfo() -> Result<u64> {
     let mut count = 0;
-    while let Some(line) = lines.next().await {
-        let line = line?;
-        if line.starts_with("processor") {
+    for line in fs_ext::read_lines("/proc/cpuinfo")? {
+        if line?.starts_with("processor") {
             count += 1;
         }
     }
@@ -24,15 +21,12 @@ async fn cpuinfo() -> Result<u64> {
     Ok(count)
 }
 
-async fn stat() -> Result<u64> {
+fn stat() -> Result<u64> {
     // the first "cpu" line aggregates the numbers in all
     // of the other "cpuN" lines, hence skip the first item
-    let mut lines = rt::fs::read_lines("/proc/stat").await?.skip(1);
-
     let mut count = 0;
-    while let Some(line) = lines.next().await {
-        let line = line?;
-        if line.starts_with("cpu") {
+    for line in fs_ext::read_lines("/proc/stat")?.skip(1) {
+        if line?.starts_with("cpu") {
             count += 1;
         }
     }
@@ -40,12 +34,12 @@ async fn stat() -> Result<u64> {
     Ok(count)
 }
 
-pub async fn logical_count() -> Result<u64> {
+pub fn logical_count() -> Result<u64> {
     match sysconf() {
         Ok(value) => Ok(value),
-        Err(..) => match cpuinfo().await {
+        Err(..) => match cpuinfo() {
             Ok(value) => Ok(value),
-            Err(..) => stat().await,
+            Err(..) => stat(),
         },
     }
 }

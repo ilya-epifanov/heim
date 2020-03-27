@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use heim_common::prelude::*;
-use heim_runtime as rt;
 
 #[derive(Debug, Default)]
 pub struct CpuStats {
@@ -56,6 +55,6 @@ impl FromStr for CpuStats {
     }
 }
 
-pub async fn stats() -> Result<CpuStats> {
-    rt::fs::read_into("/proc/stat").await
+pub fn stats() -> Result<CpuStats> {
+    fs_ext::read_into("/proc/stat")
 }

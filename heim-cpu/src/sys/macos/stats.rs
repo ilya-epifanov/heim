@@ -45,6 +45,6 @@ impl From<bindings::vmmeter> for CpuStats {
     }
 }
 
-pub async fn stats() -> Result<CpuStats> {
+pub fn stats() -> Result<CpuStats> {
     bindings::vm_meter().map(Into::into)
 }

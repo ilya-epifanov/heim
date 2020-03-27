@@ -15,7 +15,6 @@ heim-common = { version = "0.1.0-alpha.1", path = "../heim-common" }
 cfg-if = "~0.1"
 
 [dev-dependencies]
-heim-derive = { version = "0.1.0-alpha.1", path = "../heim-derive" }
 version-sync = "0.8"
 
 [package.metadata.docs.rs]

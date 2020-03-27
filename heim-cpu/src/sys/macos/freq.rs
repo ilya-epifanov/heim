@@ -24,7 +24,7 @@ impl CpuFrequency {
     }
 }
 
-pub async fn frequency() -> Result<CpuFrequency> {
+pub fn frequency() -> Result<CpuFrequency> {
     let current = bindings::cpu_frequency()?;
     let min = bindings::cpu_frequency_min()?;
     let max = bindings::cpu_frequency_max()?;

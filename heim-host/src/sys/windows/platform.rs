@@ -159,7 +159,7 @@ fn get_computer_name() -> Result<String> {
     }
 }
 
-pub async fn platform() -> Result<Platform> {
+pub fn platform() -> Result<Platform> {
     let version = rtl_get_version();
 
     Ok(Platform {

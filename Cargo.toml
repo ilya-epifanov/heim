@@ -2,15 +2,14 @@
 default-members = [
     "heim",
     "heim-common",
-    "heim-derive",
     "heim-host",
-    "heim-cpu",
+#    "heim-cpu",
     "heim-memory",
-    "heim-disk",
-    "heim-net",
-    "heim-process",
-    "heim-virt",
-    "heim-sensors",
+#    "heim-disk",
+#    "heim-net",
+#    "heim-process",
+#    "heim-virt",
+#    "heim-sensors",
 ]
 
 # Internal members should be skipped from the `default-members` list,
@@ -19,17 +18,17 @@ default-members = [
 members = [
     "heim",
     "heim-common",
-    "heim-derive",
     "heim-host",
-    "heim-cpu",
+#    "heim-cpu",
     "heim-memory",
-    "heim-disk",
-    "heim-net",
-    "heim-process",
-    "heim-virt",
-    "heim-sensors",
+#    "heim-disk",
+#    "heim-net",
+#    "heim-process",
+#    "heim-virt",
+#    "heim-sensors",
 
     # Internal
     "benchmarks",
     "examples",
+    "tests",
 ]

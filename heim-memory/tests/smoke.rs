@@ -1,9 +1,9 @@
 use heim_common::units::information;
 use heim_memory as memory;
 
-#[heim_derive::test]
-async fn smoke_memory() {
-    let mem = memory::memory().await;
+#[test]
+fn smoke_memory() {
+    let mem = memory::memory();
 
     assert!(mem.is_ok());
     let mem = mem.unwrap();
@@ -34,10 +34,10 @@ async fn smoke_memory() {
     }
 }
 
-#[heim_derive::test]
+#[test]
 #[allow(unused_variables)]
-async fn smoke_swap() {
-    let swap = memory::swap().await;
+fn smoke_swap() {
+    let swap = memory::swap();
 
     assert!(swap.is_ok());
     let swap = swap.unwrap();

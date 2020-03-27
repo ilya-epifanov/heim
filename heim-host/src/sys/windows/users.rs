@@ -1,3 +1,4 @@
+use std::iter;
 use std::net::IpAddr;
 
 use super::wrappers::{Session, Sessions};
@@ -40,12 +41,11 @@ impl User {
     }
 }
 
-pub fn users() -> impl Stream<Item = Result<User>> {
-    future::lazy(|_| {
-        let sessions = Sessions::new()?;
+pub fn users() -> impl Iterator<Item = Result<User>> {
+    let sessions = Sessions::new();
 
-        Ok(stream::iter(sessions).map(Ok))
-    })
-    .try_flatten_stream()
-    .try_filter_map(|session| future::ready(User::from_session(session)))
+    iter::once(sessions)
+        .flatten()
+        .map(Ok)
+        .map(User::from_session)
 }

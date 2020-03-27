@@ -1,13 +1,14 @@
+use std::fs;
+
 use heim_common::{
     units::{time, Time},
     Error, Result,
 };
-use heim_runtime as rt;
 
 const PROC_STAT: &str = "/proc/stat";
 
-pub async fn boot_time() -> Result<Time> {
-    let contents = std::fs::read_to_string(PROC_STAT).await?;
+pub fn boot_time() -> Result<Time> {
+    let contents = fs::read_to_string(PROC_STAT)?;
 
     for line in contents.lines() {
         if line.starts_with("btime ") {

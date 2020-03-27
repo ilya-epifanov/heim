@@ -28,7 +28,6 @@ heim-virt = { version = "0.1.0-alpha.1", path = "../heim-virt", optional = true,
 heim-sensors = { version = "0.1.0-alpha.1", path = "../heim-sensors", optional = true, default-features = false }
 
 [dev-dependencies]
-heim-derive = { version = "0.1.0-alpha.1", path = "../heim-derive" }
 version-sync = "0.8"
 
 [features]
@@ -46,5 +45,5 @@ virt = ["heim-virt"]
 sensors = ["heim-sensors"]
 
 [package.metadata.docs.rs]
-features = ["full", "runtime-polyfill"]
+features = ["full"]
 rustdoc-args = ["--cfg", "docsrs"]
