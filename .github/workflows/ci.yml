@@ -48,7 +48,8 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all --all-targets -- -D warnings
+          # TODO: Add `--workspace` when will be available
+          args: --all-targets -- -D warnings
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
