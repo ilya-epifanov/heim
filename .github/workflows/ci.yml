@@ -47,9 +47,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all-targets -- -D warnings
-      # `examples` and `benchmarks` are checked separately due to enabled `runtime-tokio` feature
-      # which clashes with default feature for other sub-crates.
+          args: --all --all-targets -- -D warnings
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
@@ -120,7 +118,7 @@ jobs:
   # Test suite is executed for Tier 1 platforms now,
   # which mean we can do that natively on the Actions VMs
   tests:
-    needs: [compile, runtimes]
+    needs: compile
     name: Test ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
