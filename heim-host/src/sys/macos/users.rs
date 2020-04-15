@@ -70,5 +70,5 @@ impl From<libc::utmpx> for User {
 }
 
 pub fn users() -> Result<impl Iterator<Item = Result<User>>> {
-    Ok(get_users::<User>().map(Ok))
+    Ok(get_users::<User>().into_iter().map(Ok))
 }
