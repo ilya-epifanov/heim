@@ -42,7 +42,11 @@ impl User {
 
 pub fn users() -> Result<impl Iterator<Item = Result<User>>> {
     let sessions = Sessions::new()?;
-    let iter = sessions.map(|session| Ok(User::from_session(session)));
+    let iter = sessions.filter_map(|session| match User::from_session(session) {
+        Ok(Some(user)) => Some(Ok(user)),
+        Err(e) => Some(Err(e)),
+        _ => None,
+    });
 
     Ok(iter)
 }
