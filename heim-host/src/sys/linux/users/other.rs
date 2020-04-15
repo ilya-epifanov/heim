@@ -83,8 +83,8 @@ impl From<libc::utmpx> for User {
     }
 }
 
-pub fn users() -> impl Iterator<Item = Result<User>> {
+pub fn users() -> Result<impl Iterator<Item = Result<User>>> {
     let users = get_users::<User>();
 
-    users.into_iter().map(Ok)
+    Ok(users.into_iter().map(Ok))
 }

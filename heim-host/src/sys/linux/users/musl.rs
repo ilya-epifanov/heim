@@ -1,3 +1,4 @@
+use std::iter;
 use std::net::IpAddr;
 
 use heim_common::prelude::*;
@@ -38,6 +39,6 @@ impl User {
     }
 }
 
-pub fn users() -> impl Stream<Item = Result<User>> {
-    stream::iter(vec![])
+pub fn users() -> Result<impl Iterator<Item = Result<User>>> {
+    iter::empty()
 }

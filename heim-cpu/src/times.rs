@@ -57,6 +57,6 @@ pub fn time() -> Result<CpuTime> {
 /// Returns a stream over the [CPU time] for each CPU core.
 ///
 /// [CPU time]: struct.CpuTime.html
-pub fn times() -> impl Iterator<Item = Result<CpuTime>> {
+pub fn times() -> Result<impl Iterator<Item = Result<CpuTime>>> {
     sys::times().map_ok(Into::into)
 }

@@ -37,6 +37,7 @@ fn system_performance_info() -> Result<(u64, u64)> {
             u64::from(sys_info.ContextSwitches),
             u64::from(sys_info.SystemCalls),
         )),
+        // TODO: Return an `Error`
         None => unreachable!("NtQuerySystemInformation did not returned any information"),
     }
 }
@@ -60,7 +61,7 @@ fn interrupts() -> Result<u64> {
     Ok(count.into())
 }
 
-pub async fn stats() -> Result<CpuStats> {
+pub fn stats() -> Result<CpuStats> {
     let (ctx_switches, system_calls) = system_performance_info()?;
     let dpc = dpc_count()?;
     let interrupts = interrupts()?;

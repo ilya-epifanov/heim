@@ -71,6 +71,7 @@ impl<'s> Iterator for Sessions<'s> {
             let session = self
                 .info
                 .get(self.current as usize)
+                // TODO: Propagate an error
                 .expect("Invalid session index");
             self.current += 1;
 

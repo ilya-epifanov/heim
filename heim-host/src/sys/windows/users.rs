@@ -1,4 +1,3 @@
-use std::iter;
 use std::net::IpAddr;
 
 use super::wrappers::{Session, Sessions};
@@ -41,11 +40,9 @@ impl User {
     }
 }
 
-pub fn users() -> impl Iterator<Item = Result<User>> {
-    let sessions = Sessions::new();
+pub fn users() -> Result<impl Iterator<Item = Result<User>>> {
+    let sessions = Sessions::new()?;
+    let iter = sessions.map(|session| Ok(User::from_session(session)));
 
-    iter::once(sessions)
-        .flatten()
-        .map(Ok)
-        .map(User::from_session)
+    Ok(iter)
 }

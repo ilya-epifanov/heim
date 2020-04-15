@@ -34,11 +34,9 @@ where
     E: From<io::Error>,
 {
     let lines = read_lines(path)?;
-    let iter = lines.map(|res| {
-        match res {
-            Ok(value) => T::from_str(&value),
-            Err(e) => Err(e.into()),
-        }
+    let iter = lines.map(|res| match res {
+        Ok(value) => T::from_str(&value),
+        Err(e) => Err(e.into()),
     });
 
     Ok(iter)
