@@ -36,7 +36,7 @@ fn smoke_boot_time() -> Result<(), Box<dyn Error>> {
 
 #[test]
 fn smoke_users() -> Result<(), Box<dyn Error>> {
-    for user in host::users() {
+    for user in host::users()? {
         let user = user?;
 
         let _ = user.username();
