@@ -63,8 +63,11 @@ jobs:
       matrix:
         triple:
           # Tier 1 platforms
-          - { os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu', cross: false }
-          - { os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',   cross: true }
+
+          # TODO: Temporary commented
+          # - { os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu', cross: false }
+          #- { os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',   cross: true }
+
           - { os: 'macOS-latest',   target: 'x86_64-apple-darwin',      cross: false }
           # TODO: cross does not support it
           # - { os: 'windows-latest', target: 'i686-pc-windows-msvc',     cross: true }
@@ -73,14 +76,14 @@ jobs:
           # Tier 2 platforms
 
           ## ARM64
-          - { os: 'ubuntu-latest', target: 'aarch64-unknown-linux-gnu',  cross: true }
-          - { os: 'ubuntu-latest', target: 'aarch64-unknown-linux-musl', cross: true }
+          #- { os: 'ubuntu-latest', target: 'aarch64-unknown-linux-gnu',  cross: true }
+          #- { os: 'ubuntu-latest', target: 'aarch64-unknown-linux-musl', cross: true }
           ## ARMv7
-          - { os: 'ubuntu-latest', target: 'armv7-unknown-linux-gnueabihf',  cross: true }
-          - { os: 'ubuntu-latest', target: 'armv7-unknown-linux-musleabihf', cross: true }
+          #- { os: 'ubuntu-latest', target: 'armv7-unknown-linux-gnueabihf',  cross: true }
+          #- { os: 'ubuntu-latest', target: 'armv7-unknown-linux-musleabihf', cross: true }
           ## ARMv6
-          - { os: 'ubuntu-latest', target: 'arm-unknown-linux-gnueabihf',  cross: true }
-          - { os: 'ubuntu-latest', target: 'arm-unknown-linux-musleabihf', cross: true }
+          #- { os: 'ubuntu-latest', target: 'arm-unknown-linux-gnueabihf',  cross: true }
+          #- { os: 'ubuntu-latest', target: 'arm-unknown-linux-musleabihf', cross: true }
         toolchain:
           - 1.39.0  # MSRV
           - stable

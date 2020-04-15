@@ -60,14 +60,9 @@ pub fn time() -> Result<CpuTime> {
     bindings::cpu_load_info().map(Into::into)
 }
 
-pub fn times() -> io::Result<impl Iterator<Item = Result<CpuTime>>> {
-    future::lazy(|_| {
-        let processors = bindings::processor_load_info()?;
+pub fn times() -> Result<impl Iterator<Item = Result<CpuTime>>> {
+    let processors = bindings::processor_load_info()?;
+    let iter = processors.into_iter().map(CpuTime::from).map(Ok);
 
-        let stream = stream::iter(processors).map(Ok);
-
-        Ok(stream)
-    })
-    .try_flatten_stream()
-    .map_ok(Into::into)
+    Ok(iter)
 }

@@ -60,7 +60,7 @@ fn get_processors() -> Result<Vec<PROCESSOR_POWER_INFORMATION>> {
     }
 }
 
-pub async fn frequency() -> Result<CpuFrequency> {
+pub fn frequency() -> Result<CpuFrequency> {
     let processors = get_processors()?;
 
     processors

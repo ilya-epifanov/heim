@@ -3,7 +3,7 @@ use winapi::um::{winbase, winnt};
 use super::wrappers::count::LogicalProcessors;
 use heim_common::prelude::{Error, Result};
 
-pub async fn logical_count() -> Result<u64> {
+pub fn logical_count() -> Result<u64> {
     // Safety: seems to be a very straightforward function.
     // https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getactiveprocessorcount
     let result = unsafe { winbase::GetActiveProcessorCount(winnt::ALL_PROCESSOR_GROUPS) };
@@ -15,7 +15,7 @@ pub async fn logical_count() -> Result<u64> {
     }
 }
 
-pub async fn physical_count() -> Result<Option<u64>> {
+pub fn physical_count() -> Result<Option<u64>> {
     let processors = LogicalProcessors::get()?;
     let count = processors
         .iter()

@@ -53,6 +53,7 @@ pub fn times() -> Result<impl Iterator<Item = Result<CpuTime>>> {
         winternl::query_system_information()?;
 
     let iter = processors
+        .into_iter()
         .map(|proc_info| {
             let user = proc_info.UserTime.into_time();
             let idle = proc_info.IdleTime.into_time();

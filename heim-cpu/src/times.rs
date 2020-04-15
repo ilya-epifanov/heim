@@ -58,5 +58,7 @@ pub fn time() -> Result<CpuTime> {
 ///
 /// [CPU time]: struct.CpuTime.html
 pub fn times() -> Result<impl Iterator<Item = Result<CpuTime>>> {
-    sys::times().map_ok(Into::into)
+    let iter = sys::times()?;
+
+    Ok(iter.map(|r| r.map(Into::into)))
 }
