@@ -27,7 +27,8 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-latest
+          # TODO: Temporary disabled
+          #- ubuntu-latest
           - macOS-latest
           - windows-latest
     steps:
