@@ -1,3 +1,5 @@
+use std::iter;
+
 use heim_common::prelude::*;
 use heim_common::units::Information;
 
@@ -42,6 +44,6 @@ impl IoCounters {
     }
 }
 
-pub fn io_counters() -> impl Stream<Item = Result<IoCounters>> {
-    stream::iter(vec![])
+pub fn io_counters() -> Result<impl Iterator<Item = Result<IoCounters>>> {
+    Ok(iter::empty())
 }

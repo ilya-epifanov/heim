@@ -85,6 +85,8 @@ impl fmt::Debug for Nic {
 /// Returns a stream over the [Network Interface Cards].
 ///
 /// [Network Interface Cards]: struct.Nic.html
-pub fn nic() -> impl Stream<Item = Result<Nic>> {
-    sys::nic().map_ok(Into::into)
+pub fn nic() -> Result<impl Iterator<Item = Result<Nic>>> {
+    let inner = sys::nic()?;
+
+    Ok(inner.map(|r| r.map(Nic::from)))
 }

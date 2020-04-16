@@ -56,27 +56,21 @@ impl Nic {
     }
 }
 
-pub fn nic() -> impl Stream<Item = Result<Nic>> {
-    future::lazy(|_| {
-        // `nix::ifaddrs` structs are not safe to send between threads,
-        // so collecting them in a once
-        // TODO: Can we Pin them maybe?
-        let iter = ifaddrs::getifaddrs()?;
-        let interfaces = iter.collect::<Vec<_>>();
+pub fn nic() -> Result<impl Iterator<Item = Result<Nic>>> {
+    // `nix::ifaddrs` structs are not safe to send between threads,
+    // so collecting them in a once
+    let interfaces = ifaddrs::getifaddrs()?
+        .filter_map(|addr| {
+            // Skipping unsupported address families
+            if addr.address.is_some() {
+                Some(Nic(addr))
+            } else {
+                None
+            }
+        })
+        .map(Ok);
 
-        Ok(stream::iter(interfaces).map(Ok))
-    })
-    .try_flatten_stream()
-    .try_filter_map(|addr: ifaddrs::InterfaceAddress| {
-        // Skipping unsupported address families
-        let result = if addr.address.is_some() {
-            Some(Nic(addr))
-        } else {
-            None
-        };
-
-        future::ok(result)
-    })
+    Ok(interfaces)
 }
 
 impl From<&socket::SockAddr> for Address {

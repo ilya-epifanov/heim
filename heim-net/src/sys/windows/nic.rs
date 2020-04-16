@@ -1,3 +1,5 @@
+use std::iter;
+
 use heim_common::prelude::*;
 
 use crate::Address;
@@ -47,7 +49,6 @@ impl Nic {
     }
 }
 
-pub fn nic() -> impl Stream<Item = Result<Nic>> {
-    // TODO: Stub
-    stream::iter(vec![])
+pub fn nic() -> Result<impl Iterator<Item = Result<Nic>>> {
+    Ok(iter::empty())
 }
