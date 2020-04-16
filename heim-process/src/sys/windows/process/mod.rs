@@ -4,7 +4,6 @@ use std::hash;
 use std::os::windows::ffi::OsStringExt;
 use std::path::PathBuf;
 
-use heim_common::prelude::*;
 use heim_common::units::Time;
 use winapi::um::processthreadsapi;
 
@@ -37,7 +36,7 @@ impl Process {
         self.pid
     }
 
-    pub async fn parent_pid(&self) -> ProcessResult<Pid> {
+    pub fn parent_pid(&self) -> ProcessResult<Pid> {
         let snapshot = bindings::snapshot::Snapshot::new()?;
 
         snapshot
@@ -47,7 +46,7 @@ impl Process {
             .unwrap_or_else(|| Err(ProcessError::NoSuchProcess(self.pid)))
     }
 
-    pub async fn name(&self) -> ProcessResult<String> {
+    pub fn name(&self) -> ProcessResult<String> {
         let res = match self.pid {
             0 => Ok("System Idle Process".to_string()),
             4 => Ok("System".to_string()),
@@ -88,7 +87,7 @@ impl Process {
         })
     }
 
-    pub async fn exe(&self) -> ProcessResult<PathBuf> {
+    pub fn exe(&self) -> ProcessResult<PathBuf> {
         if self.pid == 0 || self.pid == 4 {
             Err(ProcessError::AccessDenied(self.pid))
         } else {
@@ -98,15 +97,15 @@ impl Process {
         }
     }
 
-    pub async fn command(&self) -> ProcessResult<Command> {
+    pub fn command(&self) -> ProcessResult<Command> {
         self::command::command(self.pid)
     }
 
-    pub async fn cwd(&self) -> ProcessResult<PathBuf> {
+    pub fn cwd(&self) -> ProcessResult<PathBuf> {
         unimplemented!("https://github.com/heim-rs/heim/issues/105")
     }
 
-    pub async fn status(&self) -> ProcessResult<Status> {
+    pub fn status(&self) -> ProcessResult<Status> {
         if suspend::is_suspended(self.pid)? {
             Ok(Status::Stopped)
         } else {
@@ -114,15 +113,15 @@ impl Process {
         }
     }
 
-    pub async fn environment(&self) -> ProcessResult<Environment> {
+    pub fn environment(&self) -> ProcessResult<Environment> {
         unimplemented!()
     }
 
-    pub async fn create_time(&self) -> ProcessResult<Time> {
+    pub fn create_time(&self) -> ProcessResult<Time> {
         Ok(self.unique_id.create_time())
     }
 
-    pub async fn cpu_time(&self) -> ProcessResult<CpuTime> {
+    pub fn cpu_time(&self) -> ProcessResult<CpuTime> {
         // TODO: Move that check into the `bindings::ProcessHandle`
         if self.pid == 0 {
             Err(ProcessError::AccessDenied(self.pid))
@@ -133,7 +132,7 @@ impl Process {
         }
     }
 
-    pub async fn memory(&self) -> ProcessResult<Memory> {
+    pub fn memory(&self) -> ProcessResult<Memory> {
         // TODO: Move that check into the `bindings::ProcessHandle`?
         if self.pid == 0 {
             Err(ProcessError::AccessDenied(self.pid))
@@ -144,46 +143,46 @@ impl Process {
         }
     }
 
-    pub async fn priority(&self) -> ProcessResult<Priority> {
+    pub fn priority(&self) -> ProcessResult<Priority> {
         let handle = bindings::ProcessHandle::query_limited_info(self.pid)?;
         handle.priority()
     }
 
-    pub async fn set_priority(&self, value: Priority) -> ProcessResult<()> {
+    pub fn set_priority(&self, value: Priority) -> ProcessResult<()> {
         let handle = bindings::ProcessHandle::for_set_information(self.pid)?;
 
         handle.set_priority(value).map_err(Into::into)
     }
 
-    pub async fn is_running(&self) -> ProcessResult<bool> {
-        let other = get(self.pid).await?;
+    pub fn is_running(&self) -> ProcessResult<bool> {
+        let other = get(self.pid)?;
 
         Ok(other == *self)
     }
 
-    pub async fn suspend(&self) -> ProcessResult<()> {
+    pub fn suspend(&self) -> ProcessResult<()> {
         let handle = bindings::ProcessHandle::for_suspend_resume(self.pid)?;
 
         handle.suspend().map_err(Into::into)
     }
 
-    pub async fn resume(&self) -> ProcessResult<()> {
+    pub fn resume(&self) -> ProcessResult<()> {
         let handle = bindings::ProcessHandle::for_suspend_resume(self.pid)?;
 
         handle.resume().map_err(Into::into)
     }
 
-    pub async fn terminate(&self) -> ProcessResult<()> {
-        self.kill().await
+    pub fn terminate(&self) -> ProcessResult<()> {
+        self.kill()
     }
 
-    pub async fn kill(&self) -> ProcessResult<()> {
+    pub fn kill(&self) -> ProcessResult<()> {
         let handle = bindings::ProcessHandle::for_termination(self.pid)?;
 
         handle.terminate().map_err(Into::into)
     }
 
-    pub async fn wait(&self) -> ProcessResult<()> {
+    pub fn wait(&self) -> ProcessResult<()> {
         unimplemented!()
     }
 }
@@ -203,8 +202,8 @@ impl cmp::PartialEq for Process {
 impl cmp::Eq for Process {}
 
 /// Create the `Process` from `pid` without checking first if pid is alive.
-async fn get_unchecked(pid: Pid) -> ProcessResult<Process> {
-    let create_time = self::create_time::get(pid).await?;
+fn get_unchecked(pid: Pid) -> ProcessResult<Process> {
+    let create_time = self::create_time::get(pid)?;
 
     Ok(Process {
         pid,
@@ -212,20 +211,26 @@ async fn get_unchecked(pid: Pid) -> ProcessResult<Process> {
     })
 }
 
-pub fn processes() -> impl Stream<Item = ProcessResult<Process>> {
-    pids().and_then(get_unchecked)
+pub fn processes() -> ProcessResult<impl Iterator<Item = ProcessResult<Process>>> {
+    let pids = pids()?;
+    let iter = pids.map(|try_pid| match try_pid {
+        Ok(pid) => get_unchecked(pid),
+        Err(e) => Err(e),
+    });
+
+    Ok(iter)
 }
 
-pub async fn get(pid: Pid) -> ProcessResult<Process> {
-    if pid_exists(pid).await? {
-        get_unchecked(pid).await
+pub fn get(pid: Pid) -> ProcessResult<Process> {
+    if pid_exists(pid)? {
+        get_unchecked(pid)
     } else {
         Err(ProcessError::NoSuchProcess(pid))
     }
 }
 
-pub async fn current() -> ProcessResult<Process> {
+pub fn current() -> ProcessResult<Process> {
     let pid = unsafe { processthreadsapi::GetCurrentProcessId() };
 
-    get_unchecked(pid).await
+    get_unchecked(pid)
 }

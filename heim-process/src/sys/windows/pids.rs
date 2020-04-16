@@ -5,17 +5,14 @@ use winapi::um::minwinbase;
 use super::bindings;
 use crate::{Pid, ProcessError, ProcessResult};
 
-pub fn pids() -> impl Stream<Item = ProcessResult<Pid>> {
-    future::lazy(|_| {
-        let pids = bindings::pids()?;
+pub fn pids() -> ProcessResult<impl Iterator<Item = ProcessResult<Pid>>> {
+    let pids = bindings::pids()?;
+    let iter = pids.into_iter().map(Pid::from).map(Ok);
 
-        Ok(stream::iter(pids).map(Ok))
-    })
-    .try_flatten_stream()
-    .map_ok(Pid::from)
+    Ok(iter)
 }
 
-pub async fn pid_exists(pid: Pid) -> ProcessResult<bool> {
+pub fn pid_exists(pid: Pid) -> ProcessResult<bool> {
     // Special case for "System Idle Process"
     if pid == 0 {
         return Ok(true);

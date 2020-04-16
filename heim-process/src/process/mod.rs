@@ -36,27 +36,27 @@ impl Process {
     }
 
     /// Returns process parent pid.
-    pub async fn parent_pid(&self) -> ProcessResult<Pid> {
-        self.as_ref().parent_pid().await
+    pub fn parent_pid(&self) -> ProcessResult<Pid> {
+        self.as_ref().parent_pid()
     }
 
     /// Returns parent [Process].
     ///
     /// [Process]: ./struct.Process.html
-    pub async fn parent(&self) -> ProcessResult<Process> {
-        let ppid = self.parent_pid().await?;
+    pub fn parent(&self) -> ProcessResult<Process> {
+        let ppid = self.parent_pid()?;
 
-        get(ppid).await
+        get(ppid)
     }
 
     /// Returns process name.
-    pub async fn name(&self) -> ProcessResult<String> {
-        self.as_ref().name().await
+    pub fn name(&self) -> ProcessResult<String> {
+        self.as_ref().name()
     }
 
     /// Returns process executable as an absolute path.
-    pub async fn exe(&self) -> ProcessResult<PathBuf> {
-        self.as_ref().exe().await
+    pub fn exe(&self) -> ProcessResult<PathBuf> {
+        self.as_ref().exe()
     }
 
     /// Returns process command line.
@@ -67,9 +67,9 @@ impl Process {
     /// # use heim_process::{self as process, Process, ProcessResult};
     /// #
     /// # #[heim_derive::main]
-    /// # async fn main() -> ProcessResult<()> {
-    /// let process = process::current().await?;
-    /// let command = process.command().await?;
+    /// # fn main() -> ProcessResult<()> {
+    /// let process = process::current()?;
+    /// let command = process.command()?;
     /// println!("Command line arguments:");
     /// for arg in &command {
     ///     println!("{:?}", arg);
@@ -78,8 +78,8 @@ impl Process {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn command(&self) -> ProcessResult<Command> {
-        self.as_ref().command().await.map(Into::into)
+    pub fn command(&self) -> ProcessResult<Command> {
+        self.as_ref().command().map(Into::into)
     }
 
     /// Returns process current working directory.
@@ -88,37 +88,37 @@ impl Process {
     ///
     /// For Windows this method is not implemented yet and will always panic,
     /// see [#105](https://github.com/heim-rs/heim/issues/105).
-    pub async fn cwd(&self) -> ProcessResult<PathBuf> {
-        self.as_ref().cwd().await
+    pub fn cwd(&self) -> ProcessResult<PathBuf> {
+        self.as_ref().cwd()
     }
 
     /// Returns current process status.
-    pub async fn status(&self) -> ProcessResult<Status> {
-        self.as_ref().status().await
+    pub fn status(&self) -> ProcessResult<Status> {
+        self.as_ref().status()
     }
 
     /// Returns process environment.
-    pub async fn environment(&self) -> ProcessResult<Environment> {
-        self.as_ref().environment().await.map(Into::into)
+    pub fn environment(&self) -> ProcessResult<Environment> {
+        self.as_ref().environment().map(Into::into)
     }
 
     /// Returns process creation time, expressed as a [Time] amount since the UNIX epoch.
     ///
     /// [Time]: ../units/type.Time.html
-    pub async fn create_time(&self) -> ProcessResult<Time> {
-        self.as_ref().create_time().await
+    pub fn create_time(&self) -> ProcessResult<Time> {
+        self.as_ref().create_time()
     }
 
     /// Returns accumulated process time.
-    pub async fn cpu_time(&self) -> ProcessResult<CpuTime> {
-        self.as_ref().cpu_time().await.map(Into::into)
+    pub fn cpu_time(&self) -> ProcessResult<CpuTime> {
+        self.as_ref().cpu_time().map(Into::into)
     }
 
     /// Returns CPU usage measurement.
     ///
     /// Returned [`CpuUsage`] struct represents instantaneous CPU usage and does not represent
     /// any reasonable value by itself.
-    /// It is suggested to wait for a while with help of any async timer
+    /// It is suggested to wait for a while with help of any timer
     /// (for accuracy recommended delay should be at least 100 ms),
     /// call this method once again and subtract former [`CpuUsage`] from the new one.
     ///
@@ -133,12 +133,12 @@ impl Process {
     /// # use heim_process::{self as process, Process, ProcessResult};
     /// #
     /// # #[heim_derive::main]
-    /// # async fn main() -> ProcessResult<()> {
-    /// let process = process::current().await?;
-    /// let measurement_1 = process.cpu_usage().await?;
-    /// // Or any other async timer at your choice
-    /// futures_timer::Delay::new(Duration::from_millis(100)).await;
-    /// let measurement_2 = process.cpu_usage().await?;
+    /// # fn main() -> ProcessResult<()> {
+    /// let process = process::current()?;
+    /// let measurement_1 = process.cpu_usage()?;
+    /// // Or any other timer at your choice
+    /// futures_timer::Delay::new(Duration::from_millis(100));
+    /// let measurement_2 = process.cpu_usage()?;
     ///
     /// println!("CPU usage: {} %", (measurement_2 - measurement_1).get::<ratio::percent>());
     /// # Ok(())
@@ -146,12 +146,9 @@ impl Process {
     /// ```
     ///
     /// [`CpuUsage`]: ./struct.CpuUsage.html
-    pub async fn cpu_usage(&self) -> ProcessResult<CpuUsage> {
-        let (cpu_time, cpu_count) = future::try_join(
-            self.cpu_time(),
-            heim_cpu::logical_count().map_err(Into::into),
-        )
-        .await?;
+    pub fn cpu_usage(&self) -> ProcessResult<CpuUsage> {
+        let cpu_time = self.cpu_time()?;
+        let cpu_count = heim_cpu::logical_count()?;
 
         Ok(CpuUsage {
             cpu_count,
@@ -161,13 +158,13 @@ impl Process {
     }
 
     /// Returns memory usage information for this process.
-    pub async fn memory(&self) -> ProcessResult<Memory> {
-        self.as_ref().memory().await.map(Into::into)
+    pub fn memory(&self) -> ProcessResult<Memory> {
+        self.as_ref().memory().map(Into::into)
     }
 
     /// Checks if this `Process` is still running.
-    pub async fn is_running(&self) -> ProcessResult<bool> {
-        self.as_ref().is_running().await
+    pub fn is_running(&self) -> ProcessResult<bool> {
+        self.as_ref().is_running()
     }
 
     /// Suspends the current process.
@@ -180,8 +177,8 @@ impl Process {
     /// For *nix systems it sends the `SIGSTOP` signal to process.
     ///
     /// [`NoSuchProcess`]: ./enum.ProcessError.html#variant.NoSuchProcess
-    pub async fn suspend(&self) -> ProcessResult<()> {
-        self.as_ref().suspend().await
+    pub fn suspend(&self) -> ProcessResult<()> {
+        self.as_ref().suspend()
     }
 
     /// Resumes the current process.
@@ -194,8 +191,8 @@ impl Process {
     /// For *nix systems it sends the `SIGCONT` signal to process.
     ///
     /// [`NoSuchProcess`]: ./enum.ProcessError.html#variant.NoSuchProcess
-    pub async fn resume(&self) -> ProcessResult<()> {
-        self.as_ref().resume().await
+    pub fn resume(&self) -> ProcessResult<()> {
+        self.as_ref().resume()
     }
 
     /// Terminates the current process.
@@ -211,8 +208,8 @@ impl Process {
     ///
     /// [`NoSuchProcess`]: ./enum.ProcessError.html#variant.NoSuchProcess
     /// [`Process::kill`]: #method.kill
-    pub async fn terminate(&self) -> ProcessResult<()> {
-        self.as_ref().terminate().await
+    pub fn terminate(&self) -> ProcessResult<()> {
+        self.as_ref().terminate()
     }
 
     /// Kills the current process.
@@ -229,8 +226,8 @@ impl Process {
     ///
     /// [`NoSuchProcess`]: ./enum.ProcessError.html#variant.NoSuchProcess
     /// [`TerminateProcess`]: https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess
-    pub async fn kill(&self) -> ProcessResult<()> {
-        self.as_ref().kill().await
+    pub fn kill(&self) -> ProcessResult<()> {
+        self.as_ref().kill()
     }
 
     /// Wait for the current process termination.
@@ -238,8 +235,8 @@ impl Process {
     /// ## Returns
     ///
     /// If the process is already terminated, this method returns `Ok(())`.
-    pub async fn wait(&self) -> ProcessResult<()> {
-        self.as_ref().wait().await
+    pub fn wait(&self) -> ProcessResult<()> {
+        self.as_ref().wait()
     }
 }
 
@@ -249,17 +246,19 @@ impl fmt::Debug for Process {
     }
 }
 
-/// Returns a stream over the currently running processes.
-pub fn processes() -> impl Stream<Item = ProcessResult<Process>> {
-    sys::processes().map_ok(Into::into)
+/// Returns an iterator over the currently running processes.
+pub fn processes() -> ProcessResult<impl Iterator<Item = ProcessResult<Process>>> {
+    let inner = sys::processes()?;
+
+    Ok(inner.map(|r| r.map(Process::from)))
 }
 
 /// Loads the process information with `pid` given.
-pub async fn get(pid: Pid) -> ProcessResult<Process> {
-    sys::get(pid).await.map(Into::into)
+pub fn get(pid: Pid) -> ProcessResult<Process> {
+    sys::get(pid).map(Into::into)
 }
 
 /// Returns the `Process` matching the currently running program.
-pub async fn current() -> ProcessResult<Process> {
-    sys::current().await.map(Into::into)
+pub fn current() -> ProcessResult<Process> {
+    sys::current().map(Into::into)
 }

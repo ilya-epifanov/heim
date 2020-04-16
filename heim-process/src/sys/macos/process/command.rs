@@ -39,11 +39,11 @@ impl<'a> Iterator for CommandIter<'a> {
     }
 }
 
-pub async fn command(pid: Pid) -> ProcessResult<Command> {
+pub fn command(pid: Pid) -> ProcessResult<Command> {
     match wrappers::ProcArgs::get(pid) {
         Ok(proc_args) => Ok(Command(proc_args)),
         Err(e) if e.raw_os_error() == Some(libc::EINVAL) => {
-            if pid_exists(pid).await? {
+            if pid_exists(pid)? {
                 Err(ProcessError::ZombieProcess(pid))
             } else {
                 Err(e.into())

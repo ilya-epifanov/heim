@@ -1,24 +1,14 @@
-use heim_common::prelude::{future, stream, Stream, TryFutureExt};
-
 use super::bindings;
 use crate::sys::unix;
 use crate::{Pid, ProcessResult};
 
-pub fn pids() -> impl Stream<Item = ProcessResult<Pid>> {
-    future::lazy(|_| {
-        // `kinfo_proc` is not `Send`-able, so it would not be possible
-        // later to send it between threads (it's full of raw pointers),
-        // so for MVP we are just going to collect all the pids in-place.
-        let pids = bindings::processes()?
-            .into_iter()
-            .map(|proc| Ok(proc.kp_proc.p_pid))
-            .collect::<Vec<_>>();
+pub fn pids() -> ProcessResult<impl Iterator<Item = ProcessResult<Pid>>> {
+    let processes = bindings::processes()?;
+    let iter = processes.into_iter().map(|proc| Ok(proc.kp_proc.p_pid));
 
-        Ok(stream::iter(pids))
-    })
-    .try_flatten_stream()
+    Ok(iter)
 }
 
-pub async fn pid_exists(pid: Pid) -> ProcessResult<bool> {
+pub fn pid_exists(pid: Pid) -> ProcessResult<bool> {
     Ok(unix::pid_exists(pid))
 }

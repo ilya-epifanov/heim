@@ -4,11 +4,11 @@ use crate::sys::macos::{pid_exists, wrappers};
 use crate::sys::unix::Environment;
 use crate::{Pid, ProcessError, ProcessResult};
 
-pub async fn environment(pid: Pid) -> ProcessResult<Environment> {
+pub fn environment(pid: Pid) -> ProcessResult<Environment> {
     match wrappers::ProcArgs::get(pid) {
         Ok(proc_args) => Ok(proc_args.environment()),
         Err(e) if e.raw_os_error() == Some(libc::EINVAL) => {
-            if pid_exists(pid).await? {
+            if pid_exists(pid)? {
                 Err(ProcessError::ZombieProcess(pid))
             } else {
                 Err(e.into())

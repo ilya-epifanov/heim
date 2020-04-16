@@ -2,9 +2,7 @@ use std::io;
 use std::ptr;
 use std::time::Duration;
 
-use heim_common::prelude::StreamExt as _;
 use heim_common::Error;
-use heim_runtime as rt;
 
 use super::bindings::{errno, set_errno};
 use crate::os::unix::Signal;
@@ -52,44 +50,29 @@ pub fn pid_kill(pid: Pid, signal: Signal) -> ProcessResult<()> {
 }
 
 /// Wait for the process termination.
-pub async fn pid_wait(pid: Pid) -> ProcessResult<()> {
+pub fn pid_wait(pid: Pid) -> ProcessResult<()> {
     // `waitpid` might block indefinitely,
     // we need to handle that
-    let waited = rt::task::spawn_blocking(move || {
-        let result = unsafe { libc::waitpid(pid, ptr::null_mut(), 0) };
-        if result == -1 {
-            // Do not care about the error type at this point
-            Err(())
-        } else {
-            Ok(())
-        }
-    })
-    .await;
 
-    // Task finished correctly and `waitpid` succeeded too
-    if let Ok(Ok(..)) = waited {
+    let result = unsafe { libc::waitpid(pid, ptr::null_mut(), 0) };
+    // `waitpid` succeeded
+    if result != -1 {
         return Ok(());
     }
+
     // If either task failed or `waitpid` failed,
     // it could mean that either `pid` is not our child
     // or there is no such a process at all.
     // Same to `psutil`, there is nothing left to do,
     // except for a naive checking for pid existence in a loop
-
-    let interval = rt::time::interval(Duration::from_millis(40));
-    rt::pin!(interval);
-    while let Some(..) = interval.next().await {
+    loop {
         if !pid_exists(pid) {
             return Ok(());
         }
-    }
 
-    // Logically speaking, this branch is unreachable, as `time::interval`
-    // is infinite, but in order to make compiler happy,
-    // let's show some error
-    let e = Error::from(io::Error::from(io::ErrorKind::Other))
-        .with_message("Unable to await for process termination");
-    Err(e.into())
+        // TODO: Increased delay on each iteration
+        std::thread::sleep(Duration::from_millis(40))
+    }
 }
 
 /// Safe wrapper for POSIX `getpriority`

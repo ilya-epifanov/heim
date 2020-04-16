@@ -21,9 +21,9 @@ fn traverse(pid: Pid) -> ProcessResult<Time> {
     Ok(process.process.CreateTime.into_time())
 }
 
-pub async fn get(pid: Pid) -> ProcessResult<Time> {
+pub fn get(pid: Pid) -> ProcessResult<Time> {
     if pid == 0 || pid == 4 {
-        return heim_host::boot_time().await.map_err(Into::into);
+        return heim_host::boot_time().map_err(Into::into);
     }
 
     let handle = bindings::ProcessHandle::query_limited_info(pid)?;
