@@ -129,7 +129,8 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-latest
+          # TODO: Temporary disabled
+          # - ubuntu-latest
           - macOS-latest
           - windows-latest
         # We need nightly for `-Zprofile`
