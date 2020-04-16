@@ -40,40 +40,34 @@ impl Partition {
     }
 }
 
-pub fn partitions() -> impl Stream<Item = Result<Partition>> {
-    future::lazy(|_| {
-        let disks = bindings::Drives::new()?;
+pub fn partitions() -> Result<impl Iterator<Item = Result<Partition>>> {
+    let disks = bindings::Drives::new()?;
+    let iter = disks.filter_map(|disk| match disk.information() {
+        Ok(Some((drive_type, flags, file_system))) => Some(Ok(Partition {
+            volume: disk.volume_name().ok(),
+            mount_point: disk.to_path_buf(),
+            file_system,
+            drive_type,
+            flags,
+        })),
+        Ok(None) => None,
+        Err(e) => Some(Err(e)),
+    });
 
-        let stream = stream::iter(disks).map(Ok);
-
-        Ok(stream)
-    })
-    .try_flatten_stream()
-    .and_then(|disk| async move {
-        match disk.information()? {
-            Some((drive_type, flags, file_system)) => Ok(Some(Partition {
-                volume: disk.volume_name().ok(),
-                mount_point: disk.to_path_buf(),
-                file_system,
-                drive_type,
-                flags,
-            })),
-            None => Ok(None),
-        }
-    })
-    .try_filter_map(future::ok)
+    Ok(iter)
 }
 
-pub fn partitions_physical() -> impl Stream<Item = Result<Partition>> {
-    partitions().try_filter(|drive| {
-        let result = match drive.drive_type {
+pub fn partitions_physical() -> Result<impl Iterator<Item = Result<Partition>>> {
+    let iter = partitions()?.filter(|try_part| match try_part {
+        Ok(part) => match part.drive_type {
             Some(DriveType::NoRootDir) => false,
             Some(DriveType::Remote) => false,
             Some(DriveType::RamDisk) => false,
             None => false,
             _ => true,
-        };
+        },
+        Err(_) => true,
+    });
 
-        future::ready(result)
-    })
+    Ok(iter)
 }

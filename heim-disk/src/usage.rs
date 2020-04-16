@@ -53,9 +53,9 @@ impl fmt::Debug for Usage {
 /// Returns disk [Usage] statistics about the partition which contains the given `path`.
 ///
 /// [Usage]: ./struct.Usage.html
-pub async fn usage<T>(path: T) -> Result<Usage>
+pub fn usage<T>(path: T) -> Result<Usage>
 where
     T: AsRef<Path>,
 {
-    sys::usage(path).await.map(Into::into)
+    sys::usage(path).map(Into::into)
 }

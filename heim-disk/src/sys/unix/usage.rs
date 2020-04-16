@@ -57,7 +57,7 @@ impl fmt::Debug for Usage {
 }
 
 // TODO: It is an internal function, we could monomorphize it and accept `path: &Path`
-pub async fn usage<T: AsRef<Path>>(path: T) -> Result<Usage> {
+pub fn usage<T: AsRef<Path>>(path: T) -> Result<Usage> {
     let path = path
         .as_ref()
         .to_str()

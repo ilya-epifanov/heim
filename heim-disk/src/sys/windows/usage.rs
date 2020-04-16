@@ -47,7 +47,7 @@ impl fmt::Debug for Usage {
     }
 }
 
-pub async fn usage<T: AsRef<Path>>(path: T) -> Result<Usage> {
+pub fn usage<T: AsRef<Path>>(path: T) -> Result<Usage> {
     let path = match widestring::U16CString::from_os_str(path.as_ref()) {
         Ok(path) => path,
         Err(_) => return Err(io::Error::from(io::ErrorKind::InvalidInput).into()),
