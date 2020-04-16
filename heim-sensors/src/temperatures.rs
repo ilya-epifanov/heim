@@ -62,6 +62,6 @@ impl fmt::Debug for TemperatureSensor {
 /// For other platforms it returns an empty stream.
 ///
 /// [temperature sensors]: ./struct.TemperatureSensor.html
-pub fn temperatures() -> impl Stream<Item = Result<TemperatureSensor>> {
+pub fn temperatures() -> Result<impl Iterator<Item = Result<TemperatureSensor>>> {
     sys::temperatures()
 }
