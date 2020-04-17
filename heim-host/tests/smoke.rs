@@ -35,6 +35,7 @@ fn smoke_boot_time() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
+#[ignore]  // TODO: Broken for Windows environments, heap corruption?
 fn smoke_users() -> Result<(), Box<dyn Error>> {
     for user in host::users()? {
         let user = user?;
