@@ -39,8 +39,5 @@ features = [
 libc = "~ 0.2"
 mach = "0.3.2"
 
-[dev-dependencies]
-version-sync = "0.9"
-
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "docsrs"]

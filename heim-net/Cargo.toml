@@ -17,9 +17,6 @@ bitflags = "^1.0"
 macaddr = "1.0"
 libc = "~0.2"
 
-[dev-dependencies]
-version-sync = "0.9"
-
 [target.'cfg(unix)'.dependencies]
 nix = "0.17.0"
 
