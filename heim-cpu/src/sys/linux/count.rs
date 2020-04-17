@@ -1,5 +1,5 @@
 mod logical;
-//mod physical;
+mod physical;
 
 pub use self::logical::*;
-//pub use self::physical::*;
+pub use self::physical::*;

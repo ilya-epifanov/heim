@@ -1,5 +1,5 @@
-use std::fs;
 use std::collections::HashSet;
+use std::fs;
 use std::io;
 use std::os::unix::ffi::OsStrExt;
 use std::str;
@@ -8,10 +8,14 @@ use heim_common::prelude::*;
 
 fn topology() -> Result<u64> {
     let mut acc = HashSet::<u64>::new();
-    let mut entries = glob::glob("/sys/devices/system/cpu/cpu*/topology/core_id");
+    let mut entries = glob::glob("/sys/devices/system/cpu/cpu*/topology/core_id")
+        .expect("Incorrect glob pattern");
+
     while let Some(entry) = entries.next() {
-        let entry = entry?;
-        let name = entry.path().file_name();
+        let entry = entry.map_err(|e| e.into_error())?;
+        let name = entry
+            .file_name()
+            .expect("Incorrect glob pattern matched non-file entry");
 
         // TODO: Make it safe
         let core_id = unsafe { str::from_utf8_unchecked(&name.as_bytes()[3..]) };
@@ -20,8 +24,8 @@ fn topology() -> Result<u64> {
             _ => continue,
         }
 
-        let path = entry.path().join("topology/core_id");
-        let contents = rt::fs::read_to_string(path).await?;
+        let path = entry.join("topology/core_id");
+        let contents = fs::read_to_string(path)?;
         let cpu_id = contents.trim().parse()?;
 
         let _ = acc.insert(cpu_id);
@@ -53,8 +57,8 @@ fn parse_line(line: &str) -> Result<u64> {
 fn cpu_info() -> Result<Option<u64>> {
     let mut acc = Collector::default();
 
-    let mut lines = fs::read_lines("/proc/cpuinfo")?;
-    while let Some(line) = lines.next() {
+    let lines = fs_ext::read_lines("/proc/cpuinfo")?;
+    for line in lines {
         match &line? {
             l if l.starts_with("physical id") => {
                 let core_id = parse_line(l.as_str())?;

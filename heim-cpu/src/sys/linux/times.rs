@@ -3,7 +3,6 @@ use std::str::{self, FromStr};
 use heim_common::prelude::*;
 use heim_common::sys::unix::CLOCK_TICKS;
 use heim_common::units::{time, Time};
-use heim_runtime as rt;
 
 #[derive(Debug, Default)]
 pub struct CpuTime {
@@ -88,18 +87,25 @@ impl FromStr for CpuTime {
 
 pub fn time() -> Result<CpuTime> {
     // cumulative time is always the first line
-    let mut lines = rt::fs::read_lines_into::<_, CpuTime, _>("/proc/stat").await?;
-    match lines.next().await {
+    let mut lines = fs_ext::read_lines_into::<_, CpuTime, _>("/proc/stat")?;
+    match lines.next() {
         Some(line) => line,
         None => Err(Error::missing_key("cumulative time line", "/proc/stat")),
     }
 }
 
-pub fn times() -> impl Stream<Item = Result<CpuTime>> {
-    rt::fs::read_lines("/proc/stat")
-        .try_flatten_stream()
-        .skip(1)
-        .try_filter(|line| future::ready(line.starts_with("cpu")))
-        .map_err(Error::from)
-        .and_then(|line| future::ready(CpuTime::from_str(&line)))
+pub fn times() -> Result<impl Iterator<Item = Result<CpuTime>>> {
+    let iter = fs_ext::read_lines("/proc/stat")?
+        .skip(1) // Skipping cumulative time at the first line
+        .filter_map(|try_line| {
+            match try_line {
+                Ok(l) if l.starts_with("cpu") => {
+                    Some(CpuTime::from_str(&l))
+                },
+                Ok(..) => None,
+                Err(e) => Some(Err(e.into())),
+            }
+        });
+
+    Ok(iter)
 }

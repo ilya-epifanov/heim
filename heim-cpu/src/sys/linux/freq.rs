@@ -1,12 +1,12 @@
 use std::ffi::OsStr;
+use std::fs;
 use std::io;
 use std::ops;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
-use heim_common::prelude::{Error, Result, Stream, StreamExt, TryFutureExt, TryStreamExt};
+use heim_common::prelude::{Error, Result};
 use heim_common::units::{frequency, Frequency};
-use heim_runtime as rt;
 
 #[derive(Debug, Default)]
 pub struct CpuFrequency {
@@ -51,13 +51,12 @@ impl ops::Add<CpuFrequency> for CpuFrequency {
     }
 }
 
-pub async fn frequency() -> Result<CpuFrequency> {
+pub fn frequency() -> Result<CpuFrequency> {
     let mut acc = CpuFrequency::default();
     let mut amount = 0;
-    let frequencies = frequencies();
-    rt::pin!(frequencies);
+    let mut frequencies = frequencies()?;
 
-    while let Some(freq) = frequencies.next().await {
+    while let Some(freq) = frequencies.next() {
         let freq = freq?;
 
         acc = acc + freq;
@@ -77,6 +76,7 @@ pub async fn frequency() -> Result<CpuFrequency> {
 }
 
 /// Check if file name matches the `cpu\d+` mask.
+#[allow(unused)] // TODO:
 fn cpu_match(filename: &OsStr) -> bool {
     let bytes = filename.as_bytes();
     if !bytes.starts_with(b"cpu") {
@@ -88,32 +88,35 @@ fn cpu_match(filename: &OsStr) -> bool {
         .all(|byte| *byte >= b'0' && *byte <= b'9')
 }
 
-pub fn frequencies() -> impl Stream<Item = Result<CpuFrequency>> {
+pub fn frequencies() -> Result<impl Iterator<Item = Result<CpuFrequency>>> {
     // TODO: psutil looks into `/sys/devices/system/cpu/cpufreq/policy*` at first
     // But at my machine with Linux 5.0 `./cpu/cpu*/cpufreq` are symlinks to the `policy*`,
     // so at least we will cover most cases in first iteration and will fix weird values
     // later with the thoughts and patches
 
     // TODO: https://github.com/giampaolo/psutil/issues/1269
+    // TODO: Use glob
 
-    rt::fs::read_dir("/sys/devices/system/cpu/")
-        .try_flatten_stream()
-        .map_err(Error::from)
-        .try_filter_map(|entry| async move {
-            if !cpu_match(&entry.file_name()) {
-                Ok(None)
-            } else {
-                // Note: at this point we are not doing `.await`
-                // in order to execute generated futures in a parallel later
-                // with help of `.try_buffer_unordered`
-                Ok(Some(core_frequency(entry.path().join("cpufreq"))))
-            }
-        })
-        // Let's assume for a while that there will be at least 4 logical cores
-        .try_buffer_unordered(4)
-        .try_filter_map(|result| async {
-            Ok(result)
-        })
+    Ok(std::iter::empty())
+
+    //    rt::fs::read_dir("/sys/devices/system/cpu/")
+    //        .try_flatten_stream()
+    //        .map_err(Error::from)
+    //        .try_filter_map(|entry| async move {
+    //            if !cpu_match(&entry.file_name()) {
+    //                Ok(None)
+    //            } else {
+    //                // Note: at this point we are not doing `.await`
+    //                // in order to execute generated futures in a parallel later
+    //                // with help of `.try_buffer_unordered`
+    //                Ok(Some(core_frequency(entry.path().join("cpufreq"))))
+    //            }
+    //        })
+    //        // Let's assume for a while that there will be at least 4 logical cores
+    //        .try_buffer_unordered(4)
+    //        .try_filter_map(|result| async {
+    //            Ok(result)
+    //        })
 }
 
 /// Load frequency files from one CPU core.
@@ -124,31 +127,34 @@ pub fn frequencies() -> impl Stream<Item = Result<CpuFrequency>> {
 ///
 /// If `Ok(None)` is returned, it is not a CPU core directory
 /// and the results should be ignored.
-async fn core_frequency(root: PathBuf) -> Result<Option<CpuFrequency>> {
+#[allow(unused)] // TODO:
+fn core_frequency(root: PathBuf) -> Result<Option<CpuFrequency>> {
     // TODO: This thing seems to be unnecessary
     // One option is to check `Err(NotFound)` at the match below,
     // but it needs to be investigated first and probably covered by a test.
-    if !rt::fs::path_exists(&root).await {
+    if fs::metadata(&root).is_err() {
         return Ok(None);
     }
 
-    let frequencies = rt::try_join!(current_freq(&root), max_freq(&root), min_freq(&root));
-    match frequencies {
-        Ok((current, max, min)) => Ok(Some(CpuFrequency { current, max, min })),
-        Err(e) => Err(e),
-    }
+    Ok(Some(CpuFrequency {
+        current: current_freq(&root)?,
+        max: max_freq(&root)?,
+        min: min_freq(&root)?,
+    }))
 }
 
 #[allow(clippy::redundant_closure)]
-async fn read_freq(path: PathBuf) -> Result<Frequency> {
-    let contents = rt::fs::read_to_string(path).await?;
+#[allow(unused)] // TODO:
+fn read_freq(path: PathBuf) -> Result<Frequency> {
+    let contents = fs::read_to_string(path)?;
     let value = contents.trim_end().parse::<u64>()?;
 
     Ok(Frequency::new::<frequency::kilohertz>(value))
 }
 
-async fn current_freq(path: &Path) -> Result<Frequency> {
-    read_freq(path.join("scaling_cur_freq")).await
+#[allow(unused)] // TODO:
+fn current_freq(path: &Path) -> Result<Frequency> {
+    read_freq(path.join("scaling_cur_freq"))
 
     // TODO: Use `try_join` here instead of the code above
     //    let one = read_freq(path.join("scaling_cur_freq"))
@@ -164,15 +170,17 @@ async fn current_freq(path: &Path) -> Result<Frequency> {
     //    future::ready(result)
 }
 
-async fn max_freq(path: &Path) -> Result<Option<Frequency>> {
-    let value = read_freq(path.join("scaling_max_freq")).await;
+#[allow(unused)] // TODO:
+fn max_freq(path: &Path) -> Result<Option<Frequency>> {
+    let value = read_freq(path.join("scaling_max_freq"));
 
     // Don't care about errors propagation at this point
     Ok(value.ok())
 }
 
-async fn min_freq(path: &Path) -> Result<Option<Frequency>> {
-    let value = read_freq(path.join("scaling_min_freq")).await;
+#[allow(unused)] // TODO:
+fn min_freq(path: &Path) -> Result<Option<Frequency>> {
+    let value = read_freq(path.join("scaling_min_freq"));
 
     // Don't care about errors propagation at this point
     Ok(value.ok())
