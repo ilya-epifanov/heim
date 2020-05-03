@@ -9,6 +9,7 @@ heim = { path = "../heim", features = ["full", "runtime-tokio"] }
 futures = "~0.3"
 tokio = { version = "~0.2", features = ["rt-threaded"] }
 criterion = "~0.3"
+smol = "~0.1"
 
 [[bench]]
 name = "benchmark"
