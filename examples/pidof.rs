@@ -4,7 +4,7 @@ use std::env;
 use std::ffi::OsStr;
 use std::io;
 
-use tokio::stream::StreamExt as _;
+use futures::StreamExt as _;
 
 use heim::{
     process::{self, Process, ProcessResult},
@@ -25,7 +25,7 @@ async fn compare(process: ProcessResult<Process>, needle: &str) -> Option<proces
     None
 }
 
-#[tokio::main]
+#[smol_potat::main]
 async fn main() -> Result<()> {
     let needle = match env::args().nth(1) {
         Some(arg) => arg,
@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
     };
 
     let processes = process::processes();
-    tokio::pin!(processes);
+    futures::pin_mut!(processes);
     while let Some(process) = processes.next().await {
         if let Some(pid) = compare(process, &needle).await {
             print!("{} ", pid);

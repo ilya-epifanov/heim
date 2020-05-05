@@ -45,11 +45,6 @@ process = ["heim-process"]
 virt = ["heim-virt"]
 sensors = ["heim-sensors"]
 
-# Runtimes
-runtime-polyfill = ["heim-runtime/runtime-polyfill"]
-runtime-tokio = ["heim-runtime/runtime-tokio"]
-runtime-async-std = ["heim-runtime/runtime-async-std"]
-
 [package.metadata.docs.rs]
 features = ["full", "runtime-polyfill"]
 rustdoc-args = ["--cfg", "docsrs"]

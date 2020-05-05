@@ -2,7 +2,7 @@
 
 use heim::{host, Result};
 
-#[tokio::main]
+#[smol_potat::main]
 async fn main() -> Result<()> {
     let platform = host::platform().await?;
 

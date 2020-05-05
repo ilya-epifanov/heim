@@ -8,8 +8,9 @@ autoexamples = false
 autobins = false
 
 [dev-dependencies]
-heim = { path = "../heim", features = ["full", "runtime-tokio"] }
-tokio = { version = "~0.2", features = ["full", "macros"] }
+heim = { path = "../heim", features = ["full"] }
+smol = "~0.1"
+smol-potat = "~0.2"
 futures = "~0.3"
 futures-timer = "~3.0"
 cfg-if = "~0.1"

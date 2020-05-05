@@ -25,11 +25,5 @@ smol = "~0.1"
 [target.'cfg(unix)'.dependencies]
 nix = "0.17.0"
 
-[features]
-# Polyfill runtime is enabled by default only to execute examples, tests and benchmarks.
-# When used via `heim` facade crate, this feature is disabled.
-# See https://github.com/rust-lang/cargo/issues/5015 for details.
-default = ["heim-runtime/runtime-polyfill"]
-
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "docsrs"]
