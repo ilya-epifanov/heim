@@ -1,7 +1,9 @@
 use std::fs;
-use std::io;
+use std::io::{self, BufRead};
 use std::path::Path;
 use std::str::FromStr;
+
+use futures::Stream;
 
 use crate::spawn_blocking;
 
@@ -24,4 +26,30 @@ where
         R::from_str(&contents).map_err(Into::into)
     })
     .await
+}
+
+
+pub async fn read_lines_into<T, R, E>(path: T) -> io::Result<impl Stream<Item = Result<R, E>>>
+where
+    T: AsRef<Path> + Send + 'static,
+    R: FromStr + Send + 'static,
+    E: From<io::Error> + From<<R as FromStr>::Err> + Send + 'static,
+{
+    let lines = spawn_blocking(move || {
+        let file = fs::File::open(path)?;
+
+        let reader = io::BufReader::new(file);
+        let lines = reader.lines();
+
+        Ok::<_, io::Error>(lines)
+    }).await?;
+
+    let iter = lines.map(|try_line| {
+        match try_line {
+            Ok(line) => R::from_str(&line).map_err(E::from),
+            Err(e) => Err(E::from(e)),
+        }
+    });
+
+    Ok(smol::iter(iter))
 }

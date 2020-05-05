@@ -1,9 +1,11 @@
+use std::fs;
+use std::io::{self, BufRead};
 use std::str::{self, FromStr};
 
 use heim_common::prelude::*;
 use heim_common::sys::unix::CLOCK_TICKS;
 use heim_common::units::{time, Time};
-use heim_runtime as rt;
+use heim_rt as rt;
 
 #[derive(Debug, Default)]
 pub struct CpuTime {
@@ -97,13 +99,34 @@ pub async fn time() -> Result<CpuTime> {
     }
 }
 
-pub fn times() -> impl Stream<Item = Result<CpuTime>> {
-    rt::fs::read_lines("/proc/stat")
-        .try_flatten_stream()
-        .skip(1)
-        .try_filter(|line| future::ready(line.starts_with("cpu")))
-        .map_err(Error::from)
-        .and_then(|line| future::ready(CpuTime::from_str(&line)))
+pub async fn times() -> Result<impl Stream<Item = Result<CpuTime>>> {
+    // TODO: There is too much data sending across various threads.
+    // First, this one thing is executed at separate thread.
+    // Then it is sent back to the current thread.
+    // And after that `smol::iter` sends it back to some blocking thread again.
+
+    let lines = rt::spawn_blocking(|| {
+        let file = fs::File::open("/proc/stat")?;
+        let reader = io::BufReader::new(file);
+
+        Ok::<_, io::Error>(reader.lines())
+    })
+    .await?;
+
+    let iter = lines.skip(1).filter_map(|try_line| match try_line {
+        Ok(line) if line.starts_with("cpu") => Some(CpuTime::from_str(&line)),
+        Ok(..) => None,
+        Err(e) => Some(Err(e.into())),
+    });
+
+    Ok(smol::iter(iter))
+
+    //    rt::fs::read_lines("/proc/stat")
+    //        .try_flatten_stream()
+    //        .skip(1)
+    //        .try_filter(|line| future::ready(line.starts_with("cpu")))
+    //        .map_err(Error::from)
+    //        .and_then(|line| future::ready(CpuTime::from_str(&line)))
 }
 
 #[cfg(test)]
