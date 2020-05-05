@@ -3,6 +3,7 @@ use std::io::{self, BufRead};
 use std::path::Path;
 use std::str::FromStr;
 
+use futures::io::{AsyncBufReadExt, BufReader};
 use futures::Stream;
 
 use crate::spawn_blocking;
@@ -26,6 +27,17 @@ where
         R::from_str(&contents).map_err(Into::into)
     })
     .await
+}
+
+pub async fn read_lines<T>(path: T) -> io::Result<impl Stream<Item = io::Result<String>>>
+where
+    T: AsRef<Path> + Send + 'static,
+{
+    let file = spawn_blocking(move || fs::File::open(path)).await?;
+
+    let stream = smol::reader(file);
+    let reader = BufReader::new(stream);
+    Ok(reader.lines())
 }
 
 pub async fn read_lines_into<T, R, E>(path: T) -> io::Result<impl Stream<Item = Result<R, E>>>

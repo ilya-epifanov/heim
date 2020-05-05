@@ -1,11 +1,10 @@
 use std::ffi::{CString, OsStr};
-use std::io;
 use std::str::FromStr;
 
 use heim_common::prelude::*;
 use heim_common::units::{information, time, Information, Time};
 use heim_common::utils::iter::*;
-use heim_runtime as rt;
+use heim_rt as rt;
 
 // Copied from the `psutil` sources:
 //
@@ -64,9 +63,7 @@ impl IoCounters {
         let path = CString::new(format!("/sys/block/{}", self.name.replace("/", "!")))?;
 
         let result =
-            rt::task::spawn_blocking(move || unsafe { libc::access(path.as_ptr(), libc::F_OK) })
-                .await
-                .map_err(io::Error::from)?;
+            rt::spawn_blocking(move || unsafe { libc::access(path.as_ptr(), libc::F_OK) }).await;
 
         Ok(result == 0)
     }
