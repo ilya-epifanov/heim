@@ -121,50 +121,6 @@ jobs:
           args: --features full,${{ matrix.runtime }} --target=${{ matrix.triple.target }} --manifest-path=heim/Cargo.toml
           use-cross: ${{ matrix.triple.cross }}
 
-  # Now checking if integration with async runtimes works correctly
-  # Checks are executed for Tier 1 platforms only
-  runtimes:
-    name: ${{ matrix.runtime }} / ${{ matrix.os }}
-    needs: [rustfmt, clippy]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - macOS-latest
-          - windows-latest
-        toolchain:
-          - 1.39.0  # MSRV
-          - stable
-        runtime:
-          - runtime-polyfill
-    steps:
-      - uses: actions/checkout@v2
-      - name: Cache rustup toolchain
-        uses: actions/cache@v1
-        with:
-          path: ~/.rustup/toolchains
-          key: rustup-toolchain-${{ matrix.toolchain }}
-      - name: Cache cargo build target
-        if: matrix.toolchain != 'nightly'
-        uses: actions/cache@v1
-        with:
-          path: target
-          key: runtime-${{ runner.os }}-${{ matrix.toolchain }}-${{ matrix.runtime }}-${{ hashFiles('**/Cargo.toml') }}
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.toolchain }}
-          override: true
-      - name: Check runtime integration
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --features full,${{ matrix.runtime }} --manifest-path=heim/Cargo.toml
-
   # Test suite is executed for Tier 1 platforms now,
   # which mean we can do that natively on the Actions VMs
   tests:
