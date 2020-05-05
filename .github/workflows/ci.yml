@@ -15,7 +15,7 @@ jobs:
           toolchain: nightly
           override: true
           components: rustfmt
-      - run: cargo fmt --workspace -- --check
+      - run: cargo fmt --all -- --check
 
   clippy:
     runs-on: ${{ matrix.os }}
