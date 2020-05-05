@@ -110,19 +110,21 @@ impl FromStr for IoCounters {
     }
 }
 
-pub fn io_counters() -> impl Stream<Item = Result<IoCounters>> {
-    rt::fs::read_lines_into("/proc/diskstats")
-        .map_err(Into::into)
-        .try_flatten_stream()
-        .into_stream()
+pub async fn io_counters() -> Result<impl Stream<Item = Result<IoCounters>>> {
+    let stream = rt::fs::read_lines_into::<_, _, Error>("/proc/diskstats").await?;
+
+    Ok(stream)
 }
 
-pub fn io_counters_physical() -> impl Stream<Item = Result<IoCounters>> {
-    io_counters().try_filter_map(|device| async move {
+pub async fn io_counters_physical() -> Result<impl Stream<Item = Result<IoCounters>>> {
+    let counters = io_counters().await?;
+    let stream = counters.try_filter_map(|device| async move {
         if device.is_storage_device().await? {
             Ok(Some(device))
         } else {
             Ok(None)
         }
-    })
+    });
+
+    Ok(stream)
 }

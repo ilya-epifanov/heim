@@ -43,18 +43,16 @@ impl Partition {
 pub async fn partitions() -> Result<impl Stream<Item = Result<Partition>>> {
     let drives = bindings::Drives::new()?;
 
-    let iter = drives.filter_map(|drive| {
-        match drive.information() {
-            Ok(Some((drive_type, flags, file_system))) => Some(Ok(Partition {
-                volume: drive.volume_name().ok(),
-                mount_point: drive.to_path_buf(),
-                file_system,
-                drive_type,
-                flags,
-            })),
-            Ok(None) => None,
-            Err(e) => Some(Err(e)),
-        }
+    let iter = drives.filter_map(|drive| match drive.information() {
+        Ok(Some((drive_type, flags, file_system))) => Some(Ok(Partition {
+            volume: drive.volume_name().ok(),
+            mount_point: drive.to_path_buf(),
+            file_system,
+            drive_type,
+            flags,
+        })),
+        Ok(None) => None,
+        Err(e) => Some(Err(e)),
     });
 
     Ok(stream::iter(iter))

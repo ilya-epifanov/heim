@@ -119,12 +119,10 @@ pub async fn partitions_physical() -> Result<impl Stream<Item = Result<Partition
     let filesystems = known_filesystems().await?;
     let stream = partitions().await?;
 
-    let stream = stream.try_filter_map(move |part| {
-        match part {
-            Partition { device: None, .. } => future::ok(None),
-            Partition { ref fs_type, .. } if !filesystems.contains(fs_type) => future::ok(None),
-            partition => future::ok(Some(partition)),
-        }
+    let stream = stream.try_filter_map(move |part| match part {
+        Partition { device: None, .. } => future::ok(None),
+        Partition { ref fs_type, .. } if !filesystems.contains(fs_type) => future::ok(None),
+        partition => future::ok(Some(partition)),
     });
 
     Ok(stream)
