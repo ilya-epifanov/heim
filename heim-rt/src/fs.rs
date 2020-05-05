@@ -28,7 +28,6 @@ where
     .await
 }
 
-
 pub async fn read_lines_into<T, R, E>(path: T) -> io::Result<impl Stream<Item = Result<R, E>>>
 where
     T: AsRef<Path> + Send + 'static,
@@ -42,13 +41,12 @@ where
         let lines = reader.lines();
 
         Ok::<_, io::Error>(lines)
-    }).await?;
+    })
+    .await?;
 
-    let iter = lines.map(|try_line| {
-        match try_line {
-            Ok(line) => R::from_str(&line).map_err(E::from),
-            Err(e) => Err(E::from(e)),
-        }
+    let iter = lines.map(|try_line| match try_line {
+        Ok(line) => R::from_str(&line).map_err(E::from),
+        Err(e) => Err(E::from(e)),
     });
 
     Ok(smol::iter(iter))

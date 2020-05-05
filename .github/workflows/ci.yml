@@ -138,8 +138,6 @@ jobs:
           - 1.39.0  # MSRV
           - stable
         runtime:
-          - runtime-tokio
-          - runtime-async-std
           - runtime-polyfill
     steps:
       - uses: actions/checkout@v2
