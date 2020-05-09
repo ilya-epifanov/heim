@@ -174,10 +174,10 @@ impl Process {
         procfs::io(self.pid).await
     }
 
-    pub fn net_io_counters(&self) -> BoxStream<ProcessResult<heim_net::IoCounters>> {
-        heim_net::os::linux::io_counters_for_pid(self.pid())
-            .map_err(Into::into)
-            .boxed()
+    pub async fn net_io_counters(&self) -> ProcessResult<BoxStream<'_, ProcessResult<heim_net::IoCounters>>> {
+        let stream = heim_net::os::linux::io_counters_for_pid(self.pid()).await?;
+
+        Ok(stream.map_err(Into::into).boxed())
     }
 }
 
