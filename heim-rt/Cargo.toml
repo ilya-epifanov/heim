@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 futures = { version = "~0.3", default-features = false, features = ["std"] }
+futures-timer = "~3.0"
 smol = "~0.1"

@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use heim_common::prelude::*;
 use heim_common::units::Time;
-use heim_runtime as rt;
+use heim_rt as rt;
 
 use super::{pid_exists, pids};
 use crate::os::linux::IoCounters;
@@ -195,8 +195,11 @@ impl cmp::PartialEq for Process {
 
 impl cmp::Eq for Process {}
 
-pub fn processes() -> impl Stream<Item = ProcessResult<Process>> {
-    pids().map_err(Into::into).and_then(get)
+pub async fn processes() -> Result<impl Stream<Item = ProcessResult<Process>>> {
+    let pids = pids().await?;
+
+    let stream = pids.map_err(Into::into).and_then(get);
+    Ok(stream)
 }
 
 pub async fn get(pid: Pid) -> ProcessResult<Process> {

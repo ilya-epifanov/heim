@@ -1,6 +1,6 @@
 use std::fs;
 use std::io::{self, BufRead};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use futures::io::{AsyncBufReadExt, BufReader};
@@ -62,4 +62,31 @@ where
     });
 
     Ok(smol::iter(iter))
+}
+
+pub async fn read<T>(path: T) -> io::Result<Vec<u8>>
+where
+    T: AsRef<Path> + Send + 'static,
+{
+    spawn_blocking(move || fs::read(path)).await
+}
+
+pub async fn read_link<T>(path: T) -> io::Result<PathBuf>
+where
+    T: AsRef<Path> + Send + 'static,
+{
+    spawn_blocking(move || fs::read_link(path)).await
+}
+
+pub async fn read_dir<T>(path: T) -> io::Result<impl Stream<Item = io::Result<fs::DirEntry>>>
+where
+    T: AsRef<Path> + Send + 'static,
+{
+    spawn_blocking(move || {
+        let entries = fs::read_dir(path)?;
+        // TODO: Might move iterator into another thread,
+        // would nice to continue execution on the same thread.
+        Ok(smol::iter(entries))
+    })
+    .await
 }

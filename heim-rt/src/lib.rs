@@ -1,6 +1,7 @@
 use std::future::Future;
 
 pub mod fs;
+pub mod time;
 
 #[inline]
 pub async fn spawn<F, R>(f: F) -> R
