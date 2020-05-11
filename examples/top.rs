@@ -31,6 +31,7 @@ async fn main() -> ProcessResult<()> {
     }
 
     let processes = process::processes()
+        .await?
         .map_ok(|process| {
             // Note that there is no `.await` here,
             // as we want to pass the returned future

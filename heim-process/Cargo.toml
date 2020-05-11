@@ -59,6 +59,7 @@ darwin-libproc = "0.1.1"
 [dev-dependencies]
 heim-derive = { version = "0.1.0-alpha.1", path = "../heim-derive" }
 smol = "~0.1"
+futures = { version = "~0.3", default-features = false }
 futures-timer = "^3.0"
 which = { version = "^3.1", default-features = false }
 

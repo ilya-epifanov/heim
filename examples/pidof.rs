@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
         }
     };
 
-    let processes = process::processes();
+    let processes = process::processes().await?;
     futures::pin_mut!(processes);
     while let Some(process) = processes.next().await {
         if let Some(pid) = compare(process, &needle).await {
