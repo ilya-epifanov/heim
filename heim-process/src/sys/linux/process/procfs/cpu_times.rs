@@ -2,6 +2,7 @@ use heim_common::units::Time;
 
 use super::Stat;
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct CpuTime {
     utime: Time,
